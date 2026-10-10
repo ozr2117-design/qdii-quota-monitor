@@ -9,6 +9,7 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 FUNDS_FILE = os.path.join(os.path.dirname(__file__), "funds.json")
 STATUS_FILE = os.path.join(DATA_DIR, "fund_status.json")
 HISTORY_FILE = os.path.join(DATA_DIR, "history.json")
+DIRECT_SALES_FILE = os.path.join(DATA_DIR, "direct_sales.json")
 
 
 def parse_quota_limit(sgzt_text: str, buy_flag: bool = None):
@@ -81,10 +82,21 @@ def fetch_single_fund(item: dict) -> dict:
             else:
                 stype = item.get("type", "其他")
 
-            # 渠道特殊备注（如南方直销App专属）
+            # 检查直销渠道特殊额度配置 (如南方App自营限额200)
             channel_note = ""
-            if code == "021000":
-                channel_note = "💡 南方基金App自营限额 200元/日"
+            if os.path.exists(DIRECT_SALES_FILE):
+                try:
+                    with open(DIRECT_SALES_FILE, "r", encoding="utf-8") as f:
+                        ds_data = json.load(f)
+                        if code in ds_data:
+                            cfg = ds_data[code]
+                            can_buy = True
+                            limit_val = cfg.get("limit", limit_val)
+                            status_label = f"🟡 能买 ({cfg.get('channel', '自营App')}限额 {limit_val:,}元/日)"
+                            tag = "CAN_BUY_DIRECT"
+                            channel_note = cfg.get("note", "")
+                except Exception as e:
+                    print(f"Error reading direct sales config: {e}")
 
             return {
                 "code": code,

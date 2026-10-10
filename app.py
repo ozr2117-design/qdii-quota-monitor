@@ -177,6 +177,9 @@ with tab1:
     # 购买状态与额度直观文案
     def get_buy_status(row):
         amt = row["limit_amount"]
+        note = row.get("channel_note", "")
+        if note and amt > 0:
+            return f"🟡 能买 (自营限额 {int(amt):,}元/天)"
         if amt >= 999999999:
             return "🟢 能买 (不限额)"
         elif amt > 0:
