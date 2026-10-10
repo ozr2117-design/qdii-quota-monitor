@@ -7,8 +7,8 @@ from fetcher import update_all_funds, STATUS_FILE, HISTORY_FILE
 
 # 页面基础配置
 st.set_page_config(
-    page_title="场外标普/纳指被动基金额度监控",
-    page_icon="📈",
+    page_title="小鸡观察基地",
+    page_icon="🐣",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -412,7 +412,7 @@ ndx_can_buy = len(df[(df["index"].isin(["纳斯达克100", "纳斯达克科技"]
 can_buy_pct = int(round(can_buy_funds / total_funds * 100)) if total_funds > 0 else 0
 
 header_html = f"""<div class="apple-header">
-<div class="apple-title">场外标普500 / 纳斯达克 额度监控</div>
+<div class="apple-title">小鸡观察基地</div>
 <div class="apple-meta-bar">
 <span class="apple-pill">🕒 更新时间: {updated_at}</span>
 <span class="apple-pill">💡 专注美股被动QDII</span>
@@ -440,27 +440,71 @@ header_html = f"""<div class="apple-header">
 st.markdown(header_html, unsafe_allow_html=True)
 
 # Tab 布局
-tab1, tab2, tab3 = st.tabs(["🟢 额度监控列表", "🏆 今日额度最高 TOP 榜", "📜 额度变动历史"])
+tab1, tab2, tab3 = st.tabs(["🏆 今日额度最高 TOP 榜", "🟢 额度监控列表", "📜 额度变动历史"])
 
 with tab1:
+    st.caption("🏆 今日各指数可买标的中单日限额最高的前 10 只份额")
+    
+    top_funds = df[df["limit_amount"] > 0].sort_values(by="limit_amount", ascending=False)
+    
+    col_l, col_r = st.columns(2)
+    
+    def render_top_list(funds_subset):
+        items_html = []
+        for _, r in funds_subset.iterrows():
+            amt = r["limit_amount"]
+            if amt >= 999999999:
+                amt_str = "不限额"
+                amt_color = "#2e7d32"
+                amt_bg = "#e8f5e9"
+            elif amt >= 10000:
+                amt_str = f"限额 {amt/10000:.1f}万/日"
+                amt_color = "#b78103"
+                amt_bg = "#fff8e1"
+            else:
+                amt_str = f"限额 {int(amt):,}元/日"
+                amt_color = "#b78103"
+                amt_bg = "#fff8e1"
+
+            note_badge = f'<span style="color:#e65100; font-weight:500;"> · {r["channel_note"]}</span>' if r.get('channel_note') else ''
+
+            item = (
+                f'<div class="top-fund-item">'
+                f'<div style="display:flex; justify-content:space-between; align-items:center;">'
+                f'<span style="font-size:13px; font-weight:600; color:#1d1d1f;"><span style="color:#0071e3;">{r["code"]}</span> {r["name"]}</span>'
+                f'<span style="font-size:11px; font-weight:600; color:{amt_color}; background:{amt_bg}; padding:2px 7px; border-radius:10px; white-space:nowrap; margin-left:6px;">{amt_str}</span>'
+                f'</div>'
+                f'<div style="font-size:11px; color:#86868b; margin-top:3px;">'
+                f'<span>起购: {r.get("min_buy", "10")}元</span>'
+                f'{note_badge}'
+                f'</div>'
+                f'</div>'
+            )
+            items_html.append(item)
+        return "".join(items_html)
+
+    with col_l:
+        st.markdown('<div style="font-size:13px; font-weight:600; color:#1d1d1f; margin:4px 0 8px 0;">🟢 标普500 可用额度最高 TOP 10</div>', unsafe_allow_html=True)
+        sp500_top = top_funds[top_funds["index"] == "标普500"].head(10)
+        if len(sp500_top) > 0:
+            st.markdown(render_top_list(sp500_top), unsafe_allow_html=True)
+        else:
+            st.info("标普500当前暂无可申购份额")
+
+    with col_r:
+        st.markdown('<div style="font-size:13px; font-weight:600; color:#1d1d1f; margin:4px 0 8px 0;">🔵 纳斯达克100 可用额度最高 TOP 10</div>', unsafe_allow_html=True)
+        nasdaq_top = top_funds[top_funds["index"].isin(["纳斯达克100", "纳斯达克科技"])].head(10)
+        if len(nasdaq_top) > 0:
+            st.markdown(render_top_list(nasdaq_top), unsafe_allow_html=True)
+        else:
+            st.info("纳斯达克相关基金当前暂无可申购份额")
+
+with tab2:
     st.caption(f"当前显示 **{len(filtered_df)}** 只可买基金（已自动过滤暂停申购标的，可在左侧切换）")
 
     # 格式化展示数据
     display_df = filtered_df.copy()
     
-    # 购买状态与额度直观文案
-    def get_buy_status(row):
-        amt = row["limit_amount"]
-        note = row.get("channel_note", "")
-        if note and amt > 0:
-            return f"🟡 能买 (自营限额 {int(amt):,}元/天)"
-        if amt >= 999999999:
-            return "🟢 能买 (不限额)"
-        elif amt > 0:
-            return f"🟡 能买 (限额 {int(amt):,}元/天)"
-        else:
-            return "🔴 不能买 (已暂停)"
-
     def format_limit_text(amt):
         if amt >= 999999999:
             return "不限额 (充足)"
@@ -564,63 +608,6 @@ with tab1:
         file_name=f"qdii_quota_{datetime.date.today()}.csv",
         mime="text/csv"
     )
-
-with tab2:
-    st.caption("🏆 今日各指数可买标的中单日限额最高的前 10 只份额")
-    
-    top_funds = df[df["limit_amount"] > 0].sort_values(by="limit_amount", ascending=False)
-    
-    col_l, col_r = st.columns(2)
-    
-    def render_top_list(funds_subset):
-        items_html = []
-        for _, r in funds_subset.iterrows():
-            amt = r["limit_amount"]
-            if amt >= 999999999:
-                amt_str = "不限额"
-                amt_color = "#2e7d32"
-                amt_bg = "#e8f5e9"
-            elif amt >= 10000:
-                amt_str = f"限额 {amt/10000:.1f}万/日"
-                amt_color = "#b78103"
-                amt_bg = "#fff8e1"
-            else:
-                amt_str = f"限额 {int(amt):,}元/日"
-                amt_color = "#b78103"
-                amt_bg = "#fff8e1"
-
-            note_badge = f'<span style="color:#e65100; font-weight:500;"> · {r["channel_note"]}</span>' if r.get('channel_note') else ''
-
-            item = (
-                f'<div class="top-fund-item">'
-                f'<div style="display:flex; justify-content:space-between; align-items:center;">'
-                f'<span style="font-size:13px; font-weight:600; color:#1d1d1f;"><span style="color:#0071e3;">{r["code"]}</span> {r["name"]}</span>'
-                f'<span style="font-size:11px; font-weight:600; color:{amt_color}; background:{amt_bg}; padding:2px 7px; border-radius:10px; white-space:nowrap; margin-left:6px;">{amt_str}</span>'
-                f'</div>'
-                f'<div style="font-size:11px; color:#86868b; margin-top:3px;">'
-                f'<span>起购: {r.get("min_buy", "10")}元</span>'
-                f'{note_badge}'
-                f'</div>'
-                f'</div>'
-            )
-            items_html.append(item)
-        return "".join(items_html)
-
-    with col_l:
-        st.markdown('<div style="font-size:13px; font-weight:600; color:#1d1d1f; margin:4px 0 8px 0;">🟢 标普500 可用额度最高 TOP 10</div>', unsafe_allow_html=True)
-        sp500_top = top_funds[top_funds["index"] == "标普500"].head(10)
-        if len(sp500_top) > 0:
-            st.markdown(render_top_list(sp500_top), unsafe_allow_html=True)
-        else:
-            st.info("标普500当前暂无可申购份额")
-
-    with col_r:
-        st.markdown('<div style="font-size:13px; font-weight:600; color:#1d1d1f; margin:4px 0 8px 0;">🔵 纳斯达克100 可用额度最高 TOP 10</div>', unsafe_allow_html=True)
-        nasdaq_top = top_funds[top_funds["index"].isin(["纳斯达克100", "纳斯达克科技"])].head(10)
-        if len(nasdaq_top) > 0:
-            st.markdown(render_top_list(nasdaq_top), unsafe_allow_html=True)
-        else:
-            st.info("纳斯达克相关基金当前暂无可申购份额")
 
 with tab3:
     st.caption("📜 自动监测每日各标的限购额度升降与状态变更明细")
