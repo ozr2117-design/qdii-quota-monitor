@@ -13,16 +13,13 @@ HISTORY_FILE = os.path.join(DATA_DIR, "history.json")
 
 def parse_quota_limit(sgzt_text: str):
     """
-    从申购状态文字中解析限额数值与分类
-    例如：
-    - "暂停申购(单日投资上限100元)" -> 100, "严厉限额(≤100元)"
-    - "暂停申购(单日投资上限10元)" -> 10, "极度限额(≤10元)"
-    - "限大额(单日投资上限1000元)" -> 1000, "常规限额(≤1000元)"
-    - "暂停申购" -> 0, "暂停申购"
-    - "开放申购" -> 999999999, "开放申购"
+    极简明确逻辑：
+    1. 能买还是不能买 (can_buy)
+    2. 能买多少钱 (limit_amount)
+    3. 状态标签 (status_label)
     """
     if not sgzt_text:
-        return 0, "未知状态", "暂停申购"
+        return 0, False, "不能买 (状态未知)", "CANNOT_BUY"
 
     sgzt = sgzt_text.strip()
     match = re.search(r"上限\s*([\d\.]+)\s*(万)?元", sgzt)
@@ -32,30 +29,19 @@ def parse_quota_limit(sgzt_text: str):
             val *= 10000
         
         limit_val = int(val) if val.is_integer() else val
-        if limit_val <= 10:
-            category = "极度限额(≤10元)"
-            tag = "LIMIT_10"
-        elif limit_val <= 100:
-            category = "严厉限额(≤100元)"
-            tag = "LIMIT_100"
-        elif limit_val <= 1000:
-            category = "适度限额(≤1000元)"
-            tag = "LIMIT_1000"
-        elif limit_val <= 10000:
-            category = "宽松限额(≤1万元)"
-            tag = "LIMIT_10000"
+        if limit_val <= 0:
+            return 0, False, "不能买 (限额0元)", "CANNOT_BUY"
         else:
-            category = f"大额限额(≤{limit_val}元)"
-            tag = "LIMIT_LARGE"
-        return limit_val, category, tag
+            return limit_val, True, f"能买 (限额{limit_val:,}元/日)", "CAN_BUY_LIMITED"
 
-    if "暂停申购" in sgzt or "暂停交易" in sgzt or "封闭" in sgzt:
-        return 0, "暂停申购", "SUSPENDED"
+    # 没有出现具体金额上限的文字判断
+    if any(k in sgzt for k in ["暂停申购", "暂停交易", "封闭", "暂停"]):
+        return 0, False, "不能买 (暂停申购)", "CANNOT_BUY"
 
-    if "开放申购" in sgzt or "正常" in sgzt:
-        return 999999999, "开放申购(充足)", "OPEN"
+    if any(k in sgzt for k in ["开放申购", "正常", "开放"]):
+        return 999999999, True, "能买 (不限额/充足)", "CAN_BUY_OPEN"
 
-    return 0, sgzt, "OTHER"
+    return 0, False, f"不能买 ({sgzt})", "CANNOT_BUY"
 
 
 def fetch_single_fund(item: dict) -> dict:
@@ -73,7 +59,7 @@ def fetch_single_fund(item: dict) -> dict:
             resp = r.json()
             data = resp.get("Datas") or {}
             sgzt = data.get("SGZT", "")
-            limit_val, category, tag = parse_quota_limit(sgzt)
+            limit_val, can_buy, status_label, tag = parse_quota_limit(sgzt)
             
             return {
                 "code": code,
@@ -81,10 +67,11 @@ def fetch_single_fund(item: dict) -> dict:
                 "index": item.get("index", "其他"),
                 "share_type": item.get("type", "A类"),
                 "currency": item.get("currency", "人民币"),
-                "sgzt_raw": sgzt,
+                "can_buy": can_buy,
+                "status_label": status_label,
                 "limit_amount": limit_val,
-                "limit_category": category,
                 "status_tag": tag,
+                "sgzt_raw": sgzt,
                 "shzt": data.get("SHZT", "--"),
                 "nav": data.get("DWJZ", "--"),
                 "nav_date": data.get("FSRQ", "--"),
