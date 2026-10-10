@@ -318,6 +318,36 @@ st.markdown("""
         color: #d32f2f;
         font-weight: 500;
     }
+    .col-fee {
+        white-space: nowrap;
+        font-weight: 500;
+        color: #1d1d1f;
+    }
+    .badge-fee-low {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid rgba(46, 125, 50, 0.2);
+        padding: 1px 5px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+    .badge-fee-mid {
+        background: #f5f5f7;
+        color: #6e6e73;
+        padding: 1px 5px;
+        border-radius: 6px;
+        font-size: 10px;
+    }
+    .badge-fee-high {
+        background: #fff3e0;
+        color: #e65100;
+        border: 1px solid rgba(230, 81, 0, 0.2);
+        padding: 1px 5px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+    }
     .col-min {
         white-space: nowrap;
         color: #86868b;
@@ -416,6 +446,10 @@ selected_company = st.sidebar.selectbox("🏢 基金公司", company_options)
 # 模糊搜索
 search_query = st.sidebar.text_input("🔎 搜索基金代码 / 名称", "")
 
+# 排序方式
+sort_options = ["默认 (限额优先)", "综合年费率最低 (省钱优先)", "近1年收益率最高"]
+selected_sort = st.sidebar.selectbox("📊 列表排序依据", sort_options, index=0)
+
 # 数据过滤
 filtered_df = df.copy()
 
@@ -444,6 +478,14 @@ if search_query:
         filtered_df["name"].str.lower().str.contains(q) |
         filtered_df["company"].str.lower().str.contains(q)
     ]
+
+# 执行排序
+if selected_sort == "综合年费率最低 (省钱优先)":
+    if "total_fee_num" in filtered_df.columns:
+        filtered_df = filtered_df.sort_values(by="total_fee_num", ascending=True)
+elif selected_sort == "近1年收益率最高":
+    filtered_df["_syl_num"] = pd.to_numeric(filtered_df["syl_1y"], errors="coerce").fillna(-999)
+    filtered_df = filtered_df.sort_values(by="_syl_num", ascending=False)
 
 # 主页面渲染 (苹果风格设计：精致字号、圆角卡片、柔和间距)
 total_funds = len(df)
@@ -543,13 +585,15 @@ with tab1:
 with tab2:
     st.caption(f"当前显示 **{len(filtered_df)}** 只可买基金（已自动过滤暂停申购标的，可在左侧切换）")
 
-    with st.expander("💡 什么是「近1年相对基准 (晨星)」？怎么看好坏？", expanded=False):
+    with st.expander("💡 什么是「近1年相对基准」与「综合年费率」？怎么看？", expanded=False):
         st.markdown("""<div style="font-size:12px; line-height:1.6; color:#48484a; padding:4px 0;">
-<b>核心逻辑：</b> QDII 指数基金受海外管理费、托管费、外汇兑换及现金仓位损耗影响，收益通常略低于海外指数本身。<br>
-• <span class="badge-ms-green">极佳 / 跑赢</span> <b>跑输 &lt; 1.0% 或跑赢</b>：复制精度极高，管理磨损极小，属于<b>首选优质标的</b>。<br>
+<b>核心指标解读：</b><br>
+• <span class="badge-ms-green">极佳 / 跑赢</span> <b>相对基准跑输 &lt; 1.0% 或跑赢</b>：复制精度极高，超额摩擦损耗极小，属于<b>首选优质标的</b>。<br>
 • <span class="badge-ms-orange">正常</span> <b>跑输 1.0% ~ 2.0%</b>：处于正常的 QDII 外汇与运营摩擦区间。<br>
-• <span class="badge-ms-red">偏大</span> <b>跑输 &gt; 2.0%</b>：跟踪磨损较大，长期持有会被吃掉较多收益，需谨慎。<br>
-• <span class="badge-ms-gray">次新</span> <b>次新标的</b>：成立或转型不足 1 年，晨星暂无完整近 1 年基准对比。
+• <span class="badge-ms-red">偏大</span> <b>跑输 &gt; 2.0%</b>：跟踪磨损较大，长期持有易被吃掉收益，需谨慎。<br>
+• <span class="badge-fee-low">极省</span> <b>综合年费率 &le; 0.35%</b>：管理费+托管费极低，长期定投省出大量收益。<br>
+• <span class="badge-fee-mid">常规</span> <b>综合年费率 0.35% ~ 0.85%</b>：主流公募指数基金常规费率。<br>
+• <span class="badge-fee-high">偏高</span> <b>综合年费率 &gt; 0.85%</b>：通常为 C 类（含销售服务费）或老一代高费率 QDII。
 </div>""", unsafe_allow_html=True)
 
     # 格式化展示数据
@@ -566,18 +610,17 @@ with tab2:
             return f"{int(amt):,} 元/日"
 
     display_df["单日限额"] = display_df["limit_amount"].apply(format_limit_text)
-    display_df["起购金额"] = display_df["min_buy"].apply(lambda x: f"{x}元" if str(x) != "--" else "--")
     display_df["近1年收益"] = display_df.get("syl_1y", pd.Series(["--"] * len(display_df))).apply(lambda x: f"{x}%" if str(x) != "--" else "--")
     display_df["直销渠道情报"] = display_df["channel_note"].apply(lambda x: x if x else "--")
     display_df["近1年相对基准"] = display_df.apply(lambda r: f"{r.get('ms_diff', '--')} ({r.get('ms_eval_label', '--')})" if r.get('ms_diff') not in [None, "--"] else "次新标的", axis=1)
 
     table_view = display_df[[
-        "code", "name", "index", "单日限额", "近1年相对基准", "近1年收益", "起购金额", "直销渠道情报"
+        "code", "name", "index", "单日限额", "近1年相对基准", "近1年收益", "total_fee", "直销渠道情报"
     ]].rename(columns={
         "code": "代码",
         "name": "基金名称",
         "index": "标的指数",
-        "起购金额": "最低起购"
+        "total_fee": "综合年费率"
     })
 
     # 1. 移动端自适应卡片流 (手机屏幕下自动显示，电脑大屏下由 CSS 自动隐藏)
@@ -600,6 +643,17 @@ with tab2:
         else:
             ms_card_tag = f'<span class="metric-tag tag-gray">🎯 基准 <b>次新</b></span>'
 
+        total_fee = row.get("total_fee", "--")
+        fee_badge = row.get("fee_badge", "normal")
+        if total_fee == "--":
+            fee_card_tag = '<span class="metric-tag tag-gray">💸 年费 --</span>'
+        elif fee_badge == "low":
+            fee_card_tag = f'<span class="metric-tag tag-green">💸 年费 <b>{total_fee} (省)</b></span>'
+        elif fee_badge == "high":
+            fee_card_tag = f'<span class="metric-tag tag-orange">💸 年费 <b>{total_fee}</b></span>'
+        else:
+            fee_card_tag = f'<span class="metric-tag tag-gray">💸 年费 <b>{total_fee}</b></span>'
+
         card = (
             f'<div class="apple-fund-card">'
             f'<div class="card-header">'
@@ -612,7 +666,7 @@ with tab2:
             f'<div class="card-metrics-row">'
             f'{ms_card_tag}'
             f'<span class="metric-tag tag-red">📈 近1年 <b>{row["近1年收益"]}</b></span>'
-            f'<span class="metric-tag tag-gray">起购 <b>{row["起购金额"]}</b></span>'
+            f'{fee_card_tag}'
             f'</div>'
             f'{note_html}'
             f'</div>'
@@ -647,6 +701,20 @@ with tab2:
             badge_cls = "badge-ms-green" if badge_type == "green" else ("badge-ms-orange" if badge_type == "orange" else ("badge-ms-red" if badge_type == "red" else "badge-ms-gray"))
             ms_cell_html = f'<div title="{tooltip}" style="display:inline-flex; align-items:center; gap:4px; cursor:help;"><span>{diff}</span><span class="{badge_cls}">{eval_label}</span></div>'
 
+        total_fee = row.get("total_fee", "--")
+        mgmt_fee = row.get("mgmt_fee", "--")
+        cust_fee = row.get("custody_fee", "--")
+        serv_fee = row.get("service_fee", "--")
+        fee_badge = row.get("fee_badge", "normal")
+        fee_tooltip = f"管理费: {mgmt_fee} | 托管费: {cust_fee} | 销售服务费: {serv_fee}"
+        
+        if total_fee == "--":
+            fee_cell_html = '<span style="color:#c7c7cc;">--</span>'
+        else:
+            badge_cls = "badge-fee-low" if fee_badge == "low" else ("badge-fee-high" if fee_badge == "high" else "badge-fee-mid")
+            badge_lbl = "极省" if fee_badge == "low" else ("偏高" if fee_badge == "high" else "常规")
+            fee_cell_html = f'<div title="{fee_tooltip}" style="display:inline-flex; align-items:center; gap:4px; cursor:help;"><span>{total_fee}</span><span class="{badge_cls}">{badge_lbl}</span></div>'
+
         tr = (
             f'<tr>'
             f'<td class="col-code">{row["code"]}</td>'
@@ -655,7 +723,7 @@ with tab2:
             f'<td class="col-limit">{row["单日限额"]}</td>'
             f'<td class="col-error">{ms_cell_html}</td>'
             f'<td class="col-return">{row["近1年收益"]}</td>'
-            f'<td class="col-min">{row["起购金额"]}</td>'
+            f'<td class="col-fee">{fee_cell_html}</td>'
             f'<td>{channel_content}</td>'
             f'</tr>'
         )
@@ -671,7 +739,7 @@ with tab2:
         f'<th style="width:105px;">单日最高限额</th>'
         f'<th style="min-width:135px;">近1年相对基准 (晨星)</th>'
         f'<th style="width:80px;">近1年收益</th>'
-        f'<th style="width:70px;">起购门槛</th>'
+        f'<th style="width:95px;">综合年费率</th>'
         f'<th style="min-width:180px;">💡 直销渠道情报</th>'
         f'</tr></thead>'
         f'<tbody>{"".join(table_rows)}</tbody>'

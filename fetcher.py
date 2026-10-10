@@ -33,7 +33,13 @@ def extract_morningstar_benchmark(code: str) -> dict:
         "ms_diff_num": None,
         "ms_eval": "次新/暂无",
         "ms_eval_label": "次新",
-        "ms_badge_type": "gray"
+        "ms_badge_type": "gray",
+        "mgmt_fee": "--",
+        "custody_fee": "--",
+        "service_fee": "--",
+        "total_fee": "--",
+        "total_fee_num": 99.0,
+        "fee_badge": "normal"
     }
 
     if BeautifulSoup is None:
@@ -49,6 +55,29 @@ def extract_morningstar_benchmark(code: str) -> dict:
             return default_res
         
         soup = BeautifulSoup(r.text, "html.parser")
+
+        # 提取运作费率 (管理费、托管费、销售服务费)
+        mgmt_fee = None
+        cust_fee = None
+        serv_fee = None
+        for text in soup.find_all(string=re.compile(r'管理费|托管费|销售服务费')):
+            p_text = text.parent.get_text(strip=True)
+            m_mgmt = re.search(r'([0-9\.]+)%\s*管理费', p_text)
+            if m_mgmt and mgmt_fee is None:
+                mgmt_fee = float(m_mgmt.group(1))
+            m_cust = re.search(r'([0-9\.]+)%\s*托管费', p_text)
+            if m_cust and cust_fee is None:
+                cust_fee = float(m_cust.group(1))
+            m_serv = re.search(r'([0-9\.]+)%\s*销售服务费', p_text)
+            if m_serv and serv_fee is None:
+                serv_fee = float(m_serv.group(1))
+
+        mgmt_fee = mgmt_fee if mgmt_fee is not None else 0.50
+        cust_fee = cust_fee if cust_fee is not None else 0.15
+        serv_fee = serv_fee if serv_fee is not None else 0.00
+        total_fee = round(mgmt_fee + cust_fee + serv_fee, 2)
+        fee_badge = "low" if total_fee <= 0.35 else ("normal" if total_fee <= 0.85 else "high")
+
         tables = soup.find_all("table")
         
         for t in tables:
@@ -119,7 +148,13 @@ def extract_morningstar_benchmark(code: str) -> dict:
                         "ms_diff_num": diff,
                         "ms_eval": eval_text,
                         "ms_eval_label": eval_label,
-                        "ms_badge_type": badge_type
+                        "ms_badge_type": badge_type,
+                        "mgmt_fee": f"{mgmt_fee:.2f}%",
+                        "custody_fee": f"{cust_fee:.2f}%",
+                        "service_fee": f"{serv_fee:.2f}%",
+                        "total_fee": f"{total_fee:.2f}%",
+                        "total_fee_num": total_fee,
+                        "fee_badge": fee_badge
                     }
     except Exception:
         pass
@@ -253,6 +288,12 @@ def fetch_single_fund(item: dict) -> dict:
                 "ms_badge_type": ms_info.get("ms_badge_type", "gray"),
                 "ms_fund_1y": ms_info.get("ms_fund_1y", "--"),
                 "ms_benchmark_1y": ms_info.get("ms_benchmark_1y", "--"),
+                "total_fee": ms_info.get("total_fee", "--"),
+                "total_fee_num": ms_info.get("total_fee_num", 99.0),
+                "mgmt_fee": ms_info.get("mgmt_fee", "--"),
+                "custody_fee": ms_info.get("custody_fee", "--"),
+                "service_fee": ms_info.get("service_fee", "--"),
+                "fee_badge": ms_info.get("fee_badge", "normal"),
                 "company": data.get("JJGS", "--"),
                 "manager": data.get("JJJL", "--"),
                 "min_buy": data.get("MINSG", "10"),
@@ -287,6 +328,12 @@ def fetch_single_fund(item: dict) -> dict:
         "ms_badge_type": "gray",
         "ms_fund_1y": "--",
         "ms_benchmark_1y": "--",
+        "total_fee": "--",
+        "total_fee_num": 99.0,
+        "mgmt_fee": "--",
+        "custody_fee": "--",
+        "service_fee": "--",
+        "fee_badge": "normal",
         "success": False
     }
 
