@@ -13,16 +13,183 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 自定义响应式 CSS 样式 (手机自动卡片，电脑自动表格)
+# 自定义苹果风格响应式 CSS 样式
 st.markdown("""
 <style>
-    .metric-card {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 15px;
-        border-left: 5px solid #1E88E5;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    /* 全局苹果字体与柔和渲染 */
+    html, body, [class*="css"], .stMarkdown {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
+    
+    /* 容器边距柔和微调 */
+    .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
+        max-width: 1200px !important;
+    }
+
+    /* 苹果风头部组件 */
+    .apple-header {
+        margin-bottom: 12px;
+    }
+    .apple-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1d1d1f;
+        letter-spacing: -0.015em;
+        line-height: 1.3;
+        margin-bottom: 6px;
+    }
+    @media screen and (min-width: 769px) {
+        .apple-title {
+            font-size: 25px;
+        }
+    }
+    .apple-meta-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+    }
+    .apple-pill {
+        background: #f5f5f7;
+        color: #86868b;
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-weight: 400;
+    }
+
+    /* 苹果小组件风格统计卡片 (紧凑精致，横向网格) */
+    .apple-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 12px 0 16px 0;
+    }
+    .apple-stat-card {
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 12px;
+        padding: 10px 12px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+    }
+    .stat-label {
+        font-size: 11px;
+        color: #86868b;
+        font-weight: 500;
+        margin-bottom: 3px;
+        white-space: nowrap;
+    }
+    .stat-value {
+        font-size: 19px;
+        font-weight: 700;
+        color: #1d1d1f;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+    }
+    .stat-unit {
+        font-size: 12px;
+        font-weight: 400;
+        color: #86868b;
+        margin-left: 2px;
+    }
+    .stat-sub {
+        font-size: 11px;
+        color: #86868b;
+        margin-top: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .text-green {
+        color: #2e7d32;
+    }
+
+    /* 移动端卡片流苹果风 */
+    .apple-fund-card {
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 9px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+    }
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 7px;
+        gap: 8px;
+    }
+    .fund-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1d1d1f;
+        line-height: 1.35;
+        word-break: break-all;
+    }
+    .fund-code {
+        color: #0071e3;
+        font-weight: 600;
+        margin-right: 4px;
+    }
+    .badge {
+        padding: 2px 7px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .card-meta-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #48484a;
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+    .card-metrics-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 6px;
+    }
+    .metric-tag {
+        font-size: 11px;
+        padding: 2px 7px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+    }
+    .tag-blue {
+        background: #f0f6ff;
+        color: #0066cc;
+    }
+    .tag-red {
+        background: #fff2f2;
+        color: #d32f2f;
+    }
+    .card-footer-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #86868b;
+        font-size: 11px;
+        margin-top: 4px;
+        border-top: 1px dashed #f0f0f2;
+        padding-top: 6px;
+    }
+    .apple-link {
+        color: #0071e3 !important;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
     .stDataFrame {
         border-radius: 8px;
         overflow: hidden;
@@ -89,13 +256,12 @@ if "can_buy" not in df.columns:
 
 # 侧边栏：核心逻辑筛选（能买 / 不能买）
 buy_filter_options = [
-    "全部标的",
-    "🟢 只要能买的 (含限额与不限额)",
-    "🟢 只要能买且不限额的 (大额充足)",
-    "🟡 只要能买但有限额的 (额度紧张)",
-    "🔴 只要不能买的 (完全暂停)"
+    "🟢 仅看今日能买 (默认)",
+    "🟢 仅看能买且不限额 (大额充足)",
+    "🟡 仅看限额基金 (额度紧张)",
+    "⚪ 查看全部标的 (含已暂停)"
 ]
-selected_buy_filter = st.sidebar.radio("⚡ 能买还是不能买？", buy_filter_options, index=0)
+selected_buy_filter = st.sidebar.radio("⚡ 购买状态筛选", buy_filter_options, index=0)
 
 # 指数类型筛选
 index_options = ["全部"] + sorted(list(df["index"].unique()))
@@ -115,14 +281,12 @@ search_query = st.sidebar.text_input("🔎 搜索基金代码 / 名称", "")
 # 数据过滤
 filtered_df = df.copy()
 
-if selected_buy_filter == "🟢 只要能买的 (含限额与不限额)":
+if selected_buy_filter == "🟢 仅看今日能买 (默认)":
     filtered_df = filtered_df[filtered_df["limit_amount"] > 0]
-elif selected_buy_filter == "🟢 只要能买且不限额的 (大额充足)":
+elif selected_buy_filter == "🟢 仅看能买且不限额 (大额充足)":
     filtered_df = filtered_df[filtered_df["limit_amount"] >= 999999999]
-elif selected_buy_filter == "🟡 只要能买但有限额的 (额度紧张)":
+elif selected_buy_filter == "🟡 仅看限额基金 (额度紧张)":
     filtered_df = filtered_df[(filtered_df["limit_amount"] > 0) & (filtered_df["limit_amount"] < 999999999)]
-elif selected_buy_filter == "🔴 只要不能买的 (完全暂停)":
-    filtered_df = filtered_df[filtered_df["limit_amount"] == 0]
 
 if selected_index != "全部":
     filtered_df = filtered_df[filtered_df["index"] == selected_index]
@@ -143,33 +307,46 @@ if search_query:
         filtered_df["company"].str.lower().str.contains(q)
     ]
 
-# 主页面渲染
-st.title("📊 场外标普500 / 纳斯达克指数基金额度监控")
-st.caption(f"🕒 数据更新时间: **{updated_at}** | 监控标的: **{len(df)}** 只 | 💡 专注追踪场外美股被动QDII指数基金")
-
-# 顶部指标卡片
-col1, col2, col3, col4 = st.columns(4)
+# 主页面渲染 (苹果风格设计：精致字号、圆角卡片、柔和间距)
 total_funds = len(df)
 can_buy_funds = len(df[df["limit_amount"] > 0])
-open_funds = len(df[df["limit_amount"] >= 999999999])
-suspended_funds = len(df[df["limit_amount"] == 0])
+sp500_can_buy = len(df[(df["index"] == "标普500") & (df["limit_amount"] > 0)])
+ndx_can_buy = len(df[(df["index"].isin(["纳斯达克100", "纳斯达克科技"])) & (df["limit_amount"] > 0)])
+can_buy_pct = int(round(can_buy_funds / total_funds * 100)) if total_funds > 0 else 0
 
-with col1:
-    st.metric("监控总基金数", f"{total_funds} 只")
-with col2:
-    st.metric("🟢 今日能买 (总计)", f"{can_buy_funds} 只", delta=f"{can_buy_funds/total_funds*100:.0f}% 可买")
-with col3:
-    st.metric("🟢 能买且不限额", f"{open_funds} 只", delta="大额充足")
-with col4:
-    st.metric("🔴 不能买 (完全暂停)", f"{suspended_funds} 只", delta_color="inverse")
+header_html = f"""<div class="apple-header">
+<div class="apple-title">场外标普500 / 纳斯达克 额度监控</div>
+<div class="apple-meta-bar">
+<span class="apple-pill">🕒 更新时间: {updated_at}</span>
+<span class="apple-pill">💡 专注美股被动QDII</span>
+<span class="apple-pill">🎯 已自动过滤不可买标的</span>
+</div>
+</div>
+<div class="apple-stats-grid">
+<div class="apple-stat-card">
+<div class="stat-label">今日可买基金</div>
+<div class="stat-value text-green">{can_buy_funds} <span class="stat-unit">只</span></div>
+<div class="stat-sub">{can_buy_pct}% 标的开放申购</div>
+</div>
+<div class="apple-stat-card">
+<div class="stat-label">标普500 可买</div>
+<div class="stat-value">{sp500_can_buy} <span class="stat-unit">只</span></div>
+<div class="stat-sub">支持定投或大额</div>
+</div>
+<div class="apple-stat-card">
+<div class="stat-label">纳斯达克100 可买</div>
+<div class="stat-value">{ndx_can_buy} <span class="stat-unit">只</span></div>
+<div class="stat-sub">含直销渠道放水</div>
+</div>
+</div>"""
 
-st.divider()
+st.markdown(header_html, unsafe_allow_html=True)
 
 # Tab 布局
-tab1, tab2, tab3 = st.tabs(["📋 额度监控列表 (清晰直观)", "🏆 今日能买额度 TOP 榜", "📜 额度变动历史"])
+tab1, tab2, tab3 = st.tabs(["🟢 额度监控列表", "🏆 今日额度最高 TOP 榜", "📜 额度变动历史"])
 
 with tab1:
-    st.subheader(f"监控明细 (当前显示: {len(filtered_df)} 只)")
+    st.caption(f"当前显示 **{len(filtered_df)}** 只可买基金（已自动过滤暂停申购标的，可在左侧切换）")
 
     # 格式化展示数据
     display_df = filtered_df.copy()
@@ -224,33 +401,40 @@ with tab1:
     cards_html_list = []
     for _, row in display_df.iterrows():
         buy_badge = str(row["能否购买"])
-        badge_color = "#2e7d32" if "🟢" in buy_badge else ("#f57f17" if "🟡" in buy_badge else "#c62828")
-        bg_color = "#e8f5e9" if "🟢" in buy_badge else ("#fffde7" if "🟡" in buy_badge else "#ffebee")
-        
-        note_html = f'<div style="margin-top:6px; color:#e65100; font-size:13px; font-weight:bold;">{row["channel_note"]}</div>' if row["channel_note"] else ""
-        
+        if "🟢" in buy_badge:
+            badge_bg = "#e8f5e9"
+            badge_color = "#2e7d32"
+        elif "🟡" in buy_badge:
+            badge_bg = "#fff8e1"
+            badge_color = "#b78103"
+        else:
+            badge_bg = "#f5f5f7"
+            badge_color = "#86868b"
+
+        note_html = (
+            f'<div style="margin-top:6px; background:#fff9f0; border-left:3px solid #ff9500; border-radius:4px; padding:4px 8px; color:#c45100; font-size:11px; font-weight:500;">{row["channel_note"]}</div>'
+            if row["channel_note"] else ""
+        )
+
         card = (
-            f'<div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">'
-            f'<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">'
-            f'<span style="font-size: 15px; font-weight: bold; color: #1a237e; word-break: break-all; margin-right: 8px;">[{row["code"]}] {row["name"]}</span>'
-            f'<span style="background-color: {bg_color}; color: {badge_color}; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">{buy_badge}</span>'
+            f'<div class="apple-fund-card">'
+            f'<div class="card-header">'
+            f'<div class="fund-name"><span class="fund-code">{row["code"]}</span> {row["name"]}</div>'
+            f'<span class="badge" style="background:{badge_bg}; color:{badge_color};">{buy_badge}</span>'
             f'</div>'
-            f'<div style="display: flex; justify-content: space-between; color: #555; font-size: 13px; margin-bottom: 4px;">'
-            f'<span>🎯 指数: <b>{row["index"]}</b> ({row["share_type"]})</span>'
-            f'<span>💰 单日限额: <b style="color:{badge_color};">{row["单日限额"]}</b></span>'
+            f'<div class="card-meta-row">'
+            f'<span>🎯 <b>{row["index"]}</b> ({row["share_type"]})</span>'
+            f'<span>💰 限额: <b style="color:{badge_color}; font-size:13px;">{row["单日限额"]}</b></span>'
             f'</div>'
-            f'<div style="display: flex; justify-content: space-between; color: #444; font-size: 13px; margin-bottom: 4px;">'
-            f'<span>📊 跟踪误差: <b style="color:#1565c0;">{row["年化跟踪误差"]}</b></span>'
-            f'<span>📈 近1年收益: <b style="color:#c62828;">{row["近1年收益"]}</b></span>'
+            f'<div class="card-metrics-row">'
+            f'<span class="metric-tag tag-blue">📊 跟踪误差 <b>{row["年化跟踪误差"]}</b></span>'
+            f'<span class="metric-tag tag-red">📈 近1年 <b>{row["近1年收益"]}</b></span>'
             f'</div>'
-            f'<div style="display: flex; justify-content: space-between; color: #777; font-size: 12px;">'
-            f'<span>起购: {row["起购金额"]} | {row["company"]}</span>'
-            f'<span>净值: {row["nav"]} ({row["日涨跌幅"]})</span>'
+            f'<div class="card-footer-row">'
+            f'<span>起购: {row["起购金额"]} · {row["company"]} · 净值 {row["nav"]} ({row["日涨跌幅"]})</span>'
+            f'<a href="https://fund.eastmoney.com/{row["code"]}.html" target="_blank" class="apple-link">官网核验 ↗</a>'
             f'</div>'
             f'{note_html}'
-            f'<div style="margin-top: 8px; text-align: right;">'
-            f'<a href="https://fund.eastmoney.com/{row["code"]}.html" target="_blank" style="font-size: 12px; color: #1976d2; text-decoration: none;">🔗 天天基金官方核验 ➔</a>'
-            f'</div>'
             f'</div>'
         )
         cards_html_list.append(card)
