@@ -11,37 +11,42 @@ STATUS_FILE = os.path.join(DATA_DIR, "fund_status.json")
 HISTORY_FILE = os.path.join(DATA_DIR, "history.json")
 
 
-def parse_quota_limit(sgzt_text: str):
+def parse_quota_limit(sgzt_text: str, buy_flag: bool = None):
     """
-    极简明确逻辑：
-    1. 能买还是不能买 (can_buy)
-    2. 能买多少钱 (limit_amount)
-    3. 状态标签 (status_label)
+    严谨购买判断逻辑（经实盘验证）：
+    1. 只要状态以“暂停申购”、“暂停交易”、“封闭”开头，或者 buy_flag 为 False：
+       无论后面括号写什么，一律为【不能买 (已完全暂停)】，限额为 0 元！
+    2. 只有以“限大额”开头且有金额：
+       才为【能买 (限额 X 元)】！
+    3. 以“开放申购”或“正常”开头：
+       为【能买 (不限额)】！
     """
     if not sgzt_text:
         return 0, False, "不能买 (状态未知)", "CANNOT_BUY"
 
     sgzt = sgzt_text.strip()
-    match = re.search(r"上限\s*([\d\.]+)\s*(万)?元", sgzt)
-    if match:
-        val = float(match.group(1))
-        if match.group(2) == "万":
-            val *= 10000
-        
-        limit_val = int(val) if val.is_integer() else val
-        if limit_val <= 0:
-            return 0, False, "不能买 (限额0元)", "CANNOT_BUY"
-        else:
-            return limit_val, True, f"能买 (限额{limit_val:,}元/日)", "CAN_BUY_LIMITED"
 
-    # 没有出现具体金额上限的文字判断
-    if any(k in sgzt for k in ["暂停申购", "暂停交易", "封闭", "暂停"]):
-        return 0, False, "不能买 (暂停申购)", "CANNOT_BUY"
+    # 1. 如果明确以暂停申购开头，或者系统关闭了购买入口
+    if sgzt.startswith("暂停申购") or sgzt.startswith("暂停交易") or sgzt.startswith("封闭") or buy_flag is False:
+        return 0, False, "🔴 不能买 (完全暂停)", "CANNOT_BUY"
 
-    if any(k in sgzt for k in ["开放申购", "正常", "开放"]):
-        return 999999999, True, "能买 (不限额/充足)", "CAN_BUY_OPEN"
+    # 2. 如果是限大额，提取具体可用额度
+    if "限大额" in sgzt or "限购" in sgzt:
+        match = re.search(r"上限\s*([\d\.]+)\s*(万)?元", sgzt)
+        if match:
+            val = float(match.group(1))
+            if match.group(2) == "万":
+                val *= 10000
+            limit_val = int(val) if val.is_integer() else val
+            if limit_val > 0:
+                return limit_val, True, f"🟡 能买 (限额{limit_val:,}元/日)", "CAN_BUY_LIMITED"
 
-    return 0, False, f"不能买 ({sgzt})", "CANNOT_BUY"
+    # 3. 如果是开放申购
+    if "开放申购" in sgzt or "正常" in sgzt:
+        return 999999999, True, "🟢 能买 (不限额/充足)", "CAN_BUY_OPEN"
+
+    # 其他情况兜底
+    return 0, False, "🔴 不能买 (不可申购)", "CANNOT_BUY"
 
 
 def fetch_single_fund(item: dict) -> dict:
@@ -59,7 +64,8 @@ def fetch_single_fund(item: dict) -> dict:
             resp = r.json()
             data = resp.get("Datas") or {}
             sgzt = data.get("SGZT", "")
-            limit_val, can_buy, status_label, tag = parse_quota_limit(sgzt)
+            buy_flag = data.get("BUY")
+            limit_val, can_buy, status_label, tag = parse_quota_limit(sgzt, buy_flag)
             
             return {
                 "code": code,
