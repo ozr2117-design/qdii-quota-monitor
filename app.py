@@ -183,9 +183,10 @@ with tab1:
     display_df["单日限额"] = display_df["limit_amount"].apply(format_limit_text)
     display_df["起购金额"] = display_df["min_buy"].apply(lambda x: f"{x}元" if str(x) != "--" else "--")
     display_df["日涨跌幅"] = display_df["day_change"].apply(lambda x: f"{x}%" if x != "--" else "--")
+    display_df["官方验证链接"] = display_df["code"].apply(lambda c: f"https://fund.eastmoney.com/{c}.html")
 
     table_view = display_df[[
-        "code", "name", "index", "share_type", "能否购买", "单日限额", "起购金额", 
+        "code", "官方验证链接", "name", "index", "share_type", "能否购买", "单日限额", "起购金额", 
         "sgzt_raw", "nav", "日涨跌幅", "company"
     ]].rename(columns={
         "code": "代码",
@@ -204,6 +205,7 @@ with tab1:
         hide_index=True,
         column_config={
             "代码": st.column_config.TextColumn("基金代码", width="small"),
+            "官方验证链接": st.column_config.LinkColumn("官方页面", display_text="🔗 官网核验", width="small"),
             "基金名称": st.column_config.TextColumn("基金名称", width="large"),
             "标的指数": st.column_config.TextColumn("指数分类", width="medium"),
             "能否购买": st.column_config.TextColumn("购买权限", width="medium"),
