@@ -13,10 +13,12 @@ jobs:
       - name: Ping Streamlit App to Prevent Sleep
         run: |
           echo "Pinging Streamlit App to keep it active..."
-          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" https://qdii-quota-monitor.streamlit.app)
+          # 不使用 -L 避免登录墙应用 (Private App) 陷入无限循环重定向导致 curl exit 47
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://qdii-quota-monitor.streamlit.app || echo "ERR")
           echo "Streamlit App HTTP Status Code: $STATUS"
-          if [ "$STATUS" -eq 200 ]; then
-            echo "App is active and alive!"
+          if [ "$STATUS" = "200" ] || [ "$STATUS" = "303" ] || [ "$STATUS" = "302" ]; then
+            echo "App is active and alive (HTTP $STATUS, wake-up signal delivered)!"
           else
-            echo "App ping returned $STATUS, wake-up signal sent."
+            echo "App returned $STATUS, wake-up traffic sent."
           fi
+
