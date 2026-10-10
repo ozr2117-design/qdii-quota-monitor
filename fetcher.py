@@ -4,7 +4,10 @@ import re
 import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
-from bs4 import BeautifulSoup
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 FUNDS_FILE = os.path.join(os.path.dirname(__file__), "funds.json")
@@ -23,10 +26,6 @@ def extract_morningstar_benchmark(code: str) -> dict:
     - 跑输 > 2.0%：偏大 (超额摩擦损耗过高，需谨慎)
     - 暂无数据：次新基金 (成立不满1年)
     """
-    url = f"https://www.morningstar.cn/fund/{code}"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
     default_res = {
         "ms_fund_1y": "--",
         "ms_benchmark_1y": "--",
@@ -35,6 +34,14 @@ def extract_morningstar_benchmark(code: str) -> dict:
         "ms_eval": "次新/暂无",
         "ms_eval_label": "次新",
         "ms_badge_type": "gray"
+    }
+
+    if BeautifulSoup is None:
+        return default_res
+
+    url = f"https://www.morningstar.cn/fund/{code}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
     try:
         r = requests.get(url, headers=headers, timeout=6)
