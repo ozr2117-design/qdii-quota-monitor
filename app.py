@@ -212,19 +212,94 @@ st.markdown("""
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
-    .stDataFrame {
-        border-radius: 8px;
+    /* 电脑端苹果风精简表格 */
+    .apple-desktop-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 12px;
         overflow: hidden;
+        font-size: 12px;
+        margin-top: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+    }
+    .apple-desktop-table th {
+        background-color: #fafafc;
+        color: #86868b;
+        font-weight: 600;
+        text-align: left;
+        padding: 9px 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        white-space: nowrap;
+        font-size: 11px;
+    }
+    .apple-desktop-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        color: #1d1d1f;
+        vertical-align: middle;
+        line-height: 1.4;
+    }
+    .apple-desktop-table tr:last-child td {
+        border-bottom: none;
+    }
+    .apple-desktop-table tr:hover td {
+        background-color: #fbfbfd;
+    }
+    .col-code {
+        font-family: -apple-system-monospaced, "SF Pro Text", monospace;
+        color: #0071e3;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .col-name {
+        font-weight: 500;
+        white-space: normal;
+        word-break: break-all;
+    }
+    .col-index {
+        white-space: nowrap;
+    }
+    .col-limit {
+        white-space: nowrap;
+        font-weight: 600;
+        color: #2e7d32;
+    }
+    .col-error {
+        white-space: nowrap;
+        color: #0066cc;
+        font-weight: 500;
+    }
+    .col-return {
+        white-space: nowrap;
+        color: #d32f2f;
+        font-weight: 500;
+    }
+    .col-min {
+        white-space: nowrap;
+        color: #86868b;
+    }
+    .col-channel {
+        white-space: normal;
+        word-break: break-word;
+        color: #c45100;
+        font-size: 11px;
+        line-height: 1.35;
     }
 
     /* 默认电脑大屏：显示表格，隐藏手机卡片流 */
+    .desktop-table-view {
+        display: block !important;
+    }
     .mobile-cards-view {
         display: none !important;
     }
 
     /* 移动端屏幕 (宽度 <= 768px)：自动隐藏大表格，自动展示舒适卡片流 */
     @media screen and (max-width: 768px) {
-        div[data-testid="stDataFrame"] {
+        .desktop-table-view {
             display: none !important;
         }
         .mobile-cards-view {
@@ -441,22 +516,45 @@ with tab1:
     mobile_container_html = f'<div class="mobile-cards-view">{"".join(cards_html_list)}</div>'
     st.markdown(mobile_container_html, unsafe_allow_html=True)
 
-    # 2. 电脑端数据表格 (电脑大屏下正常展示，手机屏幕下由 CSS 自动隐藏)
-    st.dataframe(
-        table_view,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "代码": st.column_config.TextColumn("基金代码", width="small"),
-            "基金名称": st.column_config.TextColumn("基金名称", width="large"),
-            "标的指数": st.column_config.TextColumn("标的指数", width="small"),
-            "单日限额": st.column_config.TextColumn("单日最高限额", width="small"),
-            "年化跟踪误差": st.column_config.TextColumn("年化跟踪误差", width="small"),
-            "近1年收益": st.column_config.TextColumn("近1年收益率", width="small"),
-            "最低起购": st.column_config.TextColumn("起购门槛", width="small"),
-            "直销渠道情报": st.column_config.TextColumn("💡 直销渠道情报", width="medium")
-        }
+    # 2. 电脑端数据表格 (纯正苹果风设计：支持任意列自动换行、小字号、无横向滚动条)
+    table_rows = []
+    for _, row in display_df.iterrows():
+        channel_content = (
+            f'<div class="col-channel">💡 {row["channel_note"].replace("💡 ", "")}</div>'
+            if row["channel_note"] else '<span style="color:#c7c7cc;">--</span>'
+        )
+        tr = (
+            f'<tr>'
+            f'<td class="col-code">{row["code"]}</td>'
+            f'<td class="col-name">{row["name"]}</td>'
+            f'<td class="col-index">{row["index"]}</td>'
+            f'<td class="col-limit">{row["单日限额"]}</td>'
+            f'<td class="col-error">{row["年化跟踪误差"]}</td>'
+            f'<td class="col-return">{row["近1年收益"]}</td>'
+            f'<td class="col-min">{row["起购金额"]}</td>'
+            f'<td>{channel_content}</td>'
+            f'</tr>'
+        )
+        table_rows.append(tr)
+
+    desktop_table_html = (
+        f'<div class="desktop-table-view">'
+        f'<table class="apple-desktop-table">'
+        f'<thead><tr>'
+        f'<th style="width:70px;">代码</th>'
+        f'<th>基金名称</th>'
+        f'<th style="width:85px;">标的指数</th>'
+        f'<th style="width:105px;">单日最高限额</th>'
+        f'<th style="width:90px;">年化跟踪误差</th>'
+        f'<th style="width:80px;">近1年收益</th>'
+        f'<th style="width:70px;">起购门槛</th>'
+        f'<th style="min-width:180px;">💡 直销渠道情报</th>'
+        f'</tr></thead>'
+        f'<tbody>{"".join(table_rows)}</tbody>'
+        f'</table>'
+        f'</div>'
     )
+    st.markdown(desktop_table_html, unsafe_allow_html=True)
 
     # 导出 CSV
     csv_data = table_view.to_csv(index=False).encode('utf_8_sig')
