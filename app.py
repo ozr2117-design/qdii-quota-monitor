@@ -489,10 +489,20 @@ with tab3:
     st.subheader("📜 最近额度变动记录")
     if history:
         hist_df = pd.DataFrame(history)
-        hist_df["变动说明"] = hist_df.apply(
-            lambda x: f"从【{x.get('old_sgzt', '--')}】变更为【{x.get('new_sgzt', '--')}】",
-            axis=1
-        )
+        
+        def format_hist_change(r):
+            old_l = r.get("old_limit", 0)
+            new_l = r.get("new_limit", 0)
+            old_str = "不限额" if old_l >= 999999999 else (f"{int(old_l):,}元/日" if old_l > 0 else "暂停申购")
+            new_str = "不限额" if new_l >= 999999999 else (f"{int(new_l):,}元/日" if new_l > 0 else "暂停申购")
+            if new_l > old_l:
+                return f"🟢 放宽：从【{old_str}】上调至【{new_str}】"
+            elif new_l < old_l:
+                return f"🔴 收紧：从【{old_str}】下调至【{new_str}】"
+            else:
+                return f"⚪ 状态更新：【{r.get('old_sgzt', '')}】➔【{r.get('new_sgzt', '')}】"
+
+        hist_df["变动说明"] = hist_df.apply(format_hist_change, axis=1)
         st.dataframe(
             hist_df[["time", "code", "name", "index", "变动说明"]].rename(columns={
                 "time": "变动时间",
@@ -504,6 +514,6 @@ with tab3:
             hide_index=True
         )
     else:
-        st.info("暂无历史变动记录（每日定时运行后，如果基金公司修改了限购金额，将自动在此记录变动详情）。")
+        st.info("暂无额度变动记录（历史已重置。系统每日自动巡检，一旦基金公司放宽或收紧限额，将第一时间在此清晰记录）。")
 
 
