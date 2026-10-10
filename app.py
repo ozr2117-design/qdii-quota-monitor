@@ -187,12 +187,13 @@ with tab1:
 
     table_view = display_df[[
         "code", "官方验证链接", "name", "index", "share_type", "能否购买", "单日限额", "起购金额", 
-        "sgzt_raw", "nav", "日涨跌幅", "company"
+        "channel_note", "sgzt_raw", "nav", "日涨跌幅", "company"
     ]].rename(columns={
         "code": "代码",
         "name": "基金名称",
         "index": "标的指数",
         "share_type": "份额",
+        "channel_note": "直销渠道特殊情报",
         "sgzt_raw": "官方原始描述 (参考)",
         "nav": "最新净值",
         "日涨跌幅": "日涨跌",
@@ -211,6 +212,7 @@ with tab1:
             "能否购买": st.column_config.TextColumn("购买权限", width="medium"),
             "单日限额": st.column_config.TextColumn("单日最高可买", width="medium"),
             "起购金额": st.column_config.TextColumn("最低起购", width="small"),
+            "直销渠道特殊情报": st.column_config.TextColumn("💡 直销自营情报", width="large"),
             "最新净值": st.column_config.TextColumn("净值", width="small"),
             "日涨跌": st.column_config.TextColumn("涨跌幅", width="small"),
             "基金公司": st.column_config.TextColumn("基金公司", width="small"),

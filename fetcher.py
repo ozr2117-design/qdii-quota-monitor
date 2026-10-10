@@ -63,20 +63,40 @@ def fetch_single_fund(item: dict) -> dict:
         if r.status_code == 200:
             resp = r.json()
             data = resp.get("Datas") or {}
+            official_name = data.get("SHORTNAME") or item.get("name", "")
             sgzt = data.get("SGZT", "")
             buy_flag = data.get("BUY")
             limit_val, can_buy, status_label, tag = parse_quota_limit(sgzt, buy_flag)
             
+            # 严格根据官方名称动态解析，绝不依赖人工猜测
+            idx = "标普500" if "500" in official_name else ("纳斯达克科技" if "科技" in official_name else "纳斯达克100")
+            if official_name.endswith("A") or "A类" in official_name:
+                stype = "A类"
+            elif official_name.endswith("C") or "C类" in official_name:
+                stype = "C类"
+            elif official_name.endswith("I") or "I类" in official_name:
+                stype = "I类 (直销专属)"
+            elif official_name.endswith("E") or "E类" in official_name:
+                stype = "E类"
+            else:
+                stype = item.get("type", "其他")
+
+            # 渠道特殊备注（如南方直销App专属）
+            channel_note = ""
+            if code == "021000":
+                channel_note = "💡 南方基金App自营限额 200元/日"
+
             return {
                 "code": code,
-                "name": data.get("SHORTNAME") or item.get("name", ""),
-                "index": item.get("index", "其他"),
-                "share_type": item.get("type", "A类"),
+                "name": official_name,
+                "index": idx,
+                "share_type": stype,
                 "currency": item.get("currency", "人民币"),
                 "can_buy": can_buy,
                 "status_label": status_label,
                 "limit_amount": limit_val,
                 "status_tag": tag,
+                "channel_note": channel_note,
                 "sgzt_raw": sgzt,
                 "shzt": data.get("SHZT", "--"),
                 "nav": data.get("DWJZ", "--"),
