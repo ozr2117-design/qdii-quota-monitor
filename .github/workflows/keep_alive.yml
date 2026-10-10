@@ -13,7 +13,7 @@ jobs:
       - name: Ping Streamlit App to Prevent Sleep
         run: |
           echo "Pinging Streamlit App to keep it active..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://qdii-quota-monitor.streamlit.app)
+          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" https://qdii-quota-monitor.streamlit.app)
           echo "Streamlit App HTTP Status Code: $STATUS"
           if [ "$STATUS" -eq 200 ]; then
             echo "App is active and alive!"
