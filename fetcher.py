@@ -209,8 +209,71 @@ def update_all_funds():
         with open(HISTORY_FILE, "w", encoding="utf-8") as f:
             json.dump(history_records, f, ensure_ascii=False, indent=2)
 
+        # 触发微信 PushPlus 通知
+        send_pushplus_notification(changes, now_str)
+
     print(f"Successfully updated {len(results)} funds at {now_str}. Changes detected: {len(changes)}.")
     return payload, changes
+
+
+def send_pushplus_notification(changes, time_str):
+    token = os.environ.get("PUSHPLUS_TOKEN") or "36e8f929dd944cd08d38131e9995b3ad"
+    if not token:
+        return
+
+    title = f"📢 发现 {len(changes)} 只标普/纳指基金限购额度变动！"
+    
+    html_items = []
+    for c in changes:
+        old_val = c.get('old_limit', 0)
+        new_val = c.get('new_limit', 0)
+        
+        # 判断是放宽还是收紧
+        if new_val > old_val:
+            badge = "<span style='color:green;font-weight:bold;'>【🟢 额度放宽】</span>"
+        elif new_val < old_val:
+            badge = "<span style='color:red;font-weight:bold;'>【🔴 额度收紧】</span>"
+        else:
+            badge = "<span style='color:blue;font-weight:bold;'>【🔄 规则变动】</span>"
+
+        old_desc = f"{int(old_val):,}元" if old_val > 0 else "0元(暂停)"
+        new_desc = f"{int(new_val):,}元" if new_val > 0 else "0元(暂停)"
+        if old_val >= 999999999:
+            old_desc = "不限额"
+        if new_val >= 999999999:
+            new_desc = "不限额"
+
+        html_items.append(f"""
+        <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+            <b>{badge} [{c['code']}] {c['name']}</b> ({c['index']})<br>
+            • 变动轨迹：<b>{old_desc}</b> ➔ <b style="color:#d32f2f;">{new_desc}</b><br>
+            • 官方描述：{c.get('new_sgzt', '--')}
+        </div>
+        """)
+
+    content = f"""
+    <div style="font-family: sans-serif; line-height: 1.6;">
+        <h3 style="color: #1976d2; margin-bottom: 5px;">📈 场外QDII指数基金限额异动通报</h3>
+        <p style="color: #666; font-size: 13px;">检测时间：{time_str} | 监控标的：59只主流标普/纳指</p>
+        {"".join(html_items)}
+        <p style="margin-top: 15px; font-size: 13px; color: #888;">
+            👉 手机网页随时查看完整明细：<a href="https://qdii-quota-monitor.streamlit.app">qdii-quota-monitor.streamlit.app</a>
+        </p>
+    </div>
+    """
+
+    try:
+        url = "http://www.pushplus.plus/send"
+        payload = {
+            "token": token,
+            "title": title,
+            "content": content,
+            "template": "html"
+        }
+        res = requests.post(url, json=payload, timeout=8)
+        print("PushPlus notification sent status:", res.status_code, res.text[:100])
+    except Exception as e:
+        print("Error sending PushPlus notification:", e)
 
 
 if __name__ == "__main__":

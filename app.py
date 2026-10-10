@@ -197,28 +197,62 @@ with tab1:
         "sgzt_raw": "官方原始描述 (参考)",
         "nav": "最新净值",
         "日涨跌幅": "日涨跌",
-        "company": "基金公司"
-    })
-
-    st.dataframe(
-        table_view,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "代码": st.column_config.TextColumn("基金代码", width="small"),
-            "官方验证链接": st.column_config.LinkColumn("官方页面", display_text="🔗 官网核验", width="small"),
-            "基金名称": st.column_config.TextColumn("基金名称", width="large"),
-            "标的指数": st.column_config.TextColumn("指数分类", width="medium"),
-            "能否购买": st.column_config.TextColumn("购买权限", width="medium"),
-            "单日限额": st.column_config.TextColumn("单日最高可买", width="medium"),
-            "起购金额": st.column_config.TextColumn("最低起购", width="small"),
-            "直销渠道特殊情报": st.column_config.TextColumn("💡 直销自营情报", width="large"),
-            "最新净值": st.column_config.TextColumn("净值", width="small"),
-            "日涨跌": st.column_config.TextColumn("涨跌幅", width="small"),
-            "基金公司": st.column_config.TextColumn("基金公司", width="small"),
-            "官方原始描述 (参考)": st.column_config.TextColumn("官方描述", width="medium")
-        }
+    # 视图模式切换（手机卡片流 vs 电脑宽表）
+    view_mode = st.radio(
+        "🖥️ 选择展示视图：",
+        ["📱 手机卡片流视图 (推荐手机查看)", "💻 电脑宽表视图"],
+        horizontal=True
     )
+
+    if view_mode == "📱 手机卡片流视图 (推荐手机查看)":
+        for _, row in display_df.iterrows():
+            buy_badge = row["能否购买"]
+            badge_color = "#2e7d32" if "🟢" in buy_badge else ("#f57f17" if "🟡" in buy_badge else "#c62828")
+            bg_color = "#e8f5e9" if "🟢" in buy_badge else ("#fffde7" if "🟡" in buy_badge else "#ffebee")
+            
+            note_html = f"<div style='margin-top:6px; color:#e65100; font-size:13px; font-weight:bold;'>{row['channel_note']}</div>" if row['channel_note'] else ""
+            
+            card_html = f"""
+            <div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-size: 16px; font-weight: bold; color: #1a237e;">[{row['code']}] {row['name']}</span>
+                    <span style="background-color: {bg_color}; color: {badge_color}; padding: 3px 8px; border-radius: 4px; font-size: 13px; font-weight: bold;">{buy_badge}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; color: #555; font-size: 14px; margin-bottom: 4px;">
+                    <span>🎯 指数: <b>{row['index']}</b> ({row['share_type']})</span>
+                    <span>💰 单日限额: <b style="color:{badge_color};">{row['单日限额']}</b></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; color: #777; font-size: 13px;">
+                    <span>起购: {row['起购金额']} | {row['company']}</span>
+                    <span>净值: {row['nav']} ({row['日涨跌幅']})</span>
+                </div>
+                {note_html}
+                <div style="margin-top: 8px; text-align: right;">
+                    <a href="https://fund.eastmoney.com/{row['code']}.html" target="_blank" style="font-size: 13px; color: #1976d2; text-decoration: none;">🔗 天天基金官方核验 ➔</a>
+                </div>
+            </div>
+            """
+            st.markdown(card_html, unsafe_allow_html=True)
+    else:
+        st.dataframe(
+            table_view,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "代码": st.column_config.TextColumn("基金代码", width="small"),
+                "官方验证链接": st.column_config.LinkColumn("官方页面", display_text="🔗 官网核验", width="small"),
+                "基金名称": st.column_config.TextColumn("基金名称", width="large"),
+                "标的指数": st.column_config.TextColumn("指数分类", width="medium"),
+                "能否购买": st.column_config.TextColumn("购买权限", width="medium"),
+                "单日限额": st.column_config.TextColumn("单日最高可买", width="medium"),
+                "起购金额": st.column_config.TextColumn("最低起购", width="small"),
+                "直销渠道特殊情报": st.column_config.TextColumn("💡 直销自营情报", width="large"),
+                "最新净值": st.column_config.TextColumn("净值", width="small"),
+                "日涨跌": st.column_config.TextColumn("涨跌幅", width="small"),
+                "基金公司": st.column_config.TextColumn("基金公司", width="small"),
+                "官方原始描述 (参考)": st.column_config.TextColumn("官方描述", width="medium")
+            }
+        )
 
     # 导出 CSV
     csv_data = table_view.to_csv(index=False).encode('utf_8_sig')
