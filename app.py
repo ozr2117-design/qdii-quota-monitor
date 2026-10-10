@@ -23,23 +23,32 @@ st.markdown("""
         -moz-osx-font-smoothing: grayscale;
     }
     
-    /* 容器边距柔和微调 */
+    /* 容器边距柔和微调 (预留顶部工具栏安全距离，防止标题被遮挡) */
     .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: 5rem !important;
         padding-bottom: 2rem !important;
         max-width: 1200px !important;
+    }
+    @media screen and (max-width: 768px) {
+        .block-container {
+            padding-top: 4.2rem !important;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+        }
     }
 
     /* 苹果风头部组件 */
     .apple-header {
+        margin-top: 6px;
         margin-bottom: 12px;
+        padding-top: 6px;
     }
     .apple-title {
         font-size: 20px;
         font-weight: 600;
         color: #1d1d1f;
         letter-spacing: -0.015em;
-        line-height: 1.3;
+        line-height: 1.4;
         margin-bottom: 6px;
     }
     @media screen and (min-width: 769px) {
@@ -172,6 +181,10 @@ st.markdown("""
     .tag-red {
         background: #fff2f2;
         color: #d32f2f;
+    }
+    .tag-gray {
+        background: #f5f5f7;
+        color: #48484a;
     }
     .card-footer-row {
         display: flex;
@@ -374,43 +387,24 @@ with tab1:
         else:
             return f"{int(amt):,} 元/日"
 
-    display_df["能否购买"] = display_df.apply(get_buy_status, axis=1)
     display_df["单日限额"] = display_df["limit_amount"].apply(format_limit_text)
     display_df["起购金额"] = display_df["min_buy"].apply(lambda x: f"{x}元" if str(x) != "--" else "--")
-    display_df["日涨跌幅"] = display_df["day_change"].apply(lambda x: f"{x}%" if x != "--" else "--")
     display_df["近1年收益"] = display_df.get("syl_1y", pd.Series(["--"] * len(display_df))).apply(lambda x: f"{x}%" if str(x) != "--" else "--")
     display_df["年化跟踪误差"] = display_df.get("tracking_error", pd.Series(["--"] * len(display_df))).apply(lambda x: str(x) if str(x) != "--" else "--")
-    display_df["官方验证链接"] = display_df["code"].apply(lambda c: f"https://fund.eastmoney.com/{c}.html")
+    display_df["直销渠道情报"] = display_df["channel_note"].apply(lambda x: x if x else "--")
 
     table_view = display_df[[
-        "code", "官方验证链接", "name", "index", "share_type", "能否购买", "单日限额", 
-        "年化跟踪误差", "近1年收益", "起购金额", "channel_note", "sgzt_raw", "nav", "日涨跌幅", "company"
+        "code", "name", "index", "单日限额", "年化跟踪误差", "近1年收益", "起购金额", "直销渠道情报"
     ]].rename(columns={
         "code": "代码",
         "name": "基金名称",
         "index": "标的指数",
-        "share_type": "份额",
-        "channel_note": "直销渠道特殊情报",
-        "sgzt_raw": "官方原始描述 (参考)",
-        "nav": "最新净值",
-        "日涨跌幅": "日涨跌",
-        "company": "基金公司"
+        "起购金额": "最低起购"
     })
 
     # 1. 移动端自适应卡片流 (手机屏幕下自动显示，电脑大屏下由 CSS 自动隐藏)
     cards_html_list = []
     for _, row in display_df.iterrows():
-        buy_badge = str(row["能否购买"])
-        if "🟢" in buy_badge:
-            badge_bg = "#e8f5e9"
-            badge_color = "#2e7d32"
-        elif "🟡" in buy_badge:
-            badge_bg = "#fff8e1"
-            badge_color = "#b78103"
-        else:
-            badge_bg = "#f5f5f7"
-            badge_color = "#86868b"
-
         note_html = (
             f'<div style="margin-top:6px; background:#fff9f0; border-left:3px solid #ff9500; border-radius:4px; padding:4px 8px; color:#c45100; font-size:11px; font-weight:500;">{row["channel_note"]}</div>'
             if row["channel_note"] else ""
@@ -420,19 +414,15 @@ with tab1:
             f'<div class="apple-fund-card">'
             f'<div class="card-header">'
             f'<div class="fund-name"><span class="fund-code">{row["code"]}</span> {row["name"]}</div>'
-            f'<span class="badge" style="background:{badge_bg}; color:{badge_color};">{buy_badge}</span>'
             f'</div>'
             f'<div class="card-meta-row">'
-            f'<span>🎯 <b>{row["index"]}</b> ({row["share_type"]})</span>'
-            f'<span>💰 限额: <b style="color:{badge_color}; font-size:13px;">{row["单日限额"]}</b></span>'
+            f'<span>🎯 标的: <b>{row["index"]}</b></span>'
+            f'<span>💰 单日限额: <b style="color:#2e7d32; font-size:13px;">{row["单日限额"]}</b></span>'
             f'</div>'
             f'<div class="card-metrics-row">'
             f'<span class="metric-tag tag-blue">📊 跟踪误差 <b>{row["年化跟踪误差"]}</b></span>'
             f'<span class="metric-tag tag-red">📈 近1年 <b>{row["近1年收益"]}</b></span>'
-            f'</div>'
-            f'<div class="card-footer-row">'
-            f'<span>起购: {row["起购金额"]} · {row["company"]} · 净值 {row["nav"]} ({row["日涨跌幅"]})</span>'
-            f'<a href="https://fund.eastmoney.com/{row["code"]}.html" target="_blank" class="apple-link">官网核验 ↗</a>'
+            f'<span class="metric-tag tag-gray">起购 <b>{row["起购金额"]}</b></span>'
             f'</div>'
             f'{note_html}'
             f'</div>'
@@ -449,19 +439,13 @@ with tab1:
         hide_index=True,
         column_config={
             "代码": st.column_config.TextColumn("基金代码", width="small"),
-            "官方验证链接": st.column_config.LinkColumn("官方页面", display_text="🔗 官网核验", width="small"),
             "基金名称": st.column_config.TextColumn("基金名称", width="large"),
-            "标的指数": st.column_config.TextColumn("指数分类", width="medium"),
-            "能否购买": st.column_config.TextColumn("购买权限", width="medium"),
-            "单日限额": st.column_config.TextColumn("单日最高可买", width="medium"),
-            "年化跟踪误差": st.column_config.TextColumn("年化跟踪误差(偏离度)", width="small"),
+            "标的指数": st.column_config.TextColumn("标的指数", width="small"),
+            "单日限额": st.column_config.TextColumn("单日最高限额", width="small"),
+            "年化跟踪误差": st.column_config.TextColumn("年化跟踪误差", width="small"),
             "近1年收益": st.column_config.TextColumn("近1年收益率", width="small"),
-            "起购金额": st.column_config.TextColumn("最低起购", width="small"),
-            "直销渠道特殊情报": st.column_config.TextColumn("💡 直销自营情报", width="large"),
-            "最新净值": st.column_config.TextColumn("净值", width="small"),
-            "日涨跌": st.column_config.TextColumn("涨跌幅", width="small"),
-            "基金公司": st.column_config.TextColumn("基金公司", width="small"),
-            "官方原始描述 (参考)": st.column_config.TextColumn("官方描述", width="medium")
+            "最低起购": st.column_config.TextColumn("起购门槛", width="small"),
+            "直销渠道情报": st.column_config.TextColumn("💡 直销渠道情报", width="medium")
         }
     )
 
@@ -522,12 +506,4 @@ with tab3:
     else:
         st.info("暂无历史变动记录（每日定时运行后，如果基金公司修改了限购金额，将自动在此记录变动详情）。")
 
-# 页脚说明
-st.markdown("---")
-st.markdown("""<div style="text-align: center; color: gray; font-size: 13px;">
-<b>购买权限逻辑说明：</b><br>
-🟢 <b>能买 (不限额)</b>：额度充足，可随意大额申购。<br>
-🟡 <b>能买 (限额 X 元)</b>：可以买！单日累计不可超过此金额（如限额100元，每天买100元定投即可成交）。<br>
-🔴 <b>不能买 (已暂停)</b>：完全关闭申购，单日限额为 0 元。<br>
-<i>数据源自公开交易接口，实际申购请以基金公司最新公告与各销售渠道为准。</i>
-</div>""", unsafe_allow_html=True)
+
