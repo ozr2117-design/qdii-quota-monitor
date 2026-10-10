@@ -1,0 +1,22 @@
+name: Keep Streamlit App Alive
+
+on:
+  schedule:
+    # 每天早中晚自动 ping 一次保活 (UTC 02:00, 10:00, 18:00)
+    - cron: '0 2,10,18 * * *'
+  workflow_dispatch: # 支持手动触发
+
+jobs:
+  ping-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Streamlit App to Prevent Sleep
+        run: |
+          echo "Pinging Streamlit App to keep it active..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://qdii-quota-monitor.streamlit.app)
+          echo "Streamlit App HTTP Status Code: $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "App is active and alive!"
+          else
+            echo "App ping returned $STATUS, wake-up signal sent."
+          fi
