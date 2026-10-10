@@ -223,36 +223,37 @@ with tab1:
     # 1. 移动端自适应卡片流 (手机屏幕下自动显示，电脑大屏下由 CSS 自动隐藏)
     cards_html_list = []
     for _, row in display_df.iterrows():
-        buy_badge = row["能否购买"]
+        buy_badge = str(row["能否购买"])
         badge_color = "#2e7d32" if "🟢" in buy_badge else ("#f57f17" if "🟡" in buy_badge else "#c62828")
         bg_color = "#e8f5e9" if "🟢" in buy_badge else ("#fffde7" if "🟡" in buy_badge else "#ffebee")
         
-        note_html = f"<div style='margin-top:6px; color:#e65100; font-size:13px; font-weight:bold;'>{row['channel_note']}</div>" if row['channel_note'] else ""
+        note_html = f'<div style="margin-top:6px; color:#e65100; font-size:13px; font-weight:bold;">{row["channel_note"]}</div>' if row["channel_note"] else ""
         
-        cards_html_list.append(f"""
-        <div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span style="font-size: 16px; font-weight: bold; color: #1a237e;">[{row['code']}] {row['name']}</span>
-                <span style="background-color: {bg_color}; color: {badge_color}; padding: 3px 8px; border-radius: 4px; font-size: 13px; font-weight: bold;">{buy_badge}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; color: #555; font-size: 14px; margin-bottom: 4px;">
-                <span>🎯 指数: <b>{row['index']}</b> ({row['share_type']})</span>
-                <span>💰 单日限额: <b style="color:{badge_color};">{row['单日限额']}</b></span>
-            </div>
-            <div style="display: flex; justify-content: space-between; color: #444; font-size: 13px; margin-bottom: 4px;">
-                <span>📊 跟踪误差: <b style="color:#1565c0;">{row['年化跟踪误差']}</b></span>
-                <span>📈 近1年收益: <b style="color:#c62828;">{row['近1年收益']}</b></span>
-            </div>
-            <div style="display: flex; justify-content: space-between; color: #777; font-size: 13px;">
-                <span>起购: {row['起购金额']} | {row['company']}</span>
-                <span>净值: {row['nav']} ({row['日涨跌幅']})</span>
-            </div>
-            {note_html}
-            <div style="margin-top: 8px; text-align: right;">
-                <a href="https://fund.eastmoney.com/{row['code']}.html" target="_blank" style="font-size: 13px; color: #1976d2; text-decoration: none;">🔗 天天基金官方核验 ➔</a>
-            </div>
-        </div>
-        """)
+        card = (
+            f'<div style="background-color: white; border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">'
+            f'<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">'
+            f'<span style="font-size: 15px; font-weight: bold; color: #1a237e; word-break: break-all; margin-right: 8px;">[{row["code"]}] {row["name"]}</span>'
+            f'<span style="background-color: {bg_color}; color: {badge_color}; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; flex-shrink: 0;">{buy_badge}</span>'
+            f'</div>'
+            f'<div style="display: flex; justify-content: space-between; color: #555; font-size: 13px; margin-bottom: 4px;">'
+            f'<span>🎯 指数: <b>{row["index"]}</b> ({row["share_type"]})</span>'
+            f'<span>💰 单日限额: <b style="color:{badge_color};">{row["单日限额"]}</b></span>'
+            f'</div>'
+            f'<div style="display: flex; justify-content: space-between; color: #444; font-size: 13px; margin-bottom: 4px;">'
+            f'<span>📊 跟踪误差: <b style="color:#1565c0;">{row["年化跟踪误差"]}</b></span>'
+            f'<span>📈 近1年收益: <b style="color:#c62828;">{row["近1年收益"]}</b></span>'
+            f'</div>'
+            f'<div style="display: flex; justify-content: space-between; color: #777; font-size: 12px;">'
+            f'<span>起购: {row["起购金额"]} | {row["company"]}</span>'
+            f'<span>净值: {row["nav"]} ({row["日涨跌幅"]})</span>'
+            f'</div>'
+            f'{note_html}'
+            f'<div style="margin-top: 8px; text-align: right;">'
+            f'<a href="https://fund.eastmoney.com/{row["code"]}.html" target="_blank" style="font-size: 12px; color: #1976d2; text-decoration: none;">🔗 天天基金官方核验 ➔</a>'
+            f'</div>'
+            f'</div>'
+        )
+        cards_html_list.append(card)
 
     mobile_container_html = f'<div class="mobile-cards-view">{"".join(cards_html_list)}</div>'
     st.markdown(mobile_container_html, unsafe_allow_html=True)
@@ -339,12 +340,10 @@ with tab3:
 
 # 页脚说明
 st.markdown("---")
-st.markdown("""
-<div style="text-align: center; color: gray; font-size: 13px;">
-    <b>购买权限逻辑说明：</b><br>
-    🟢 <b>能买 (不限额)</b>：额度充足，可随意大额申购。<br>
-    🟡 <b>能买 (限额 X 元)</b>：可以买！单日累计不可超过此金额（如限额100元，每天买100元定投即可成交）。<br>
-    🔴 <b>不能买 (已暂停)</b>：完全关闭申购，单日限额为 0 元。<br>
-    <i>数据源自公开交易接口，实际申购请以基金公司最新公告与各销售渠道为准。</i>
-</div>
-""", unsafe_allow_html=True)
+st.markdown("""<div style="text-align: center; color: gray; font-size: 13px;">
+<b>购买权限逻辑说明：</b><br>
+🟢 <b>能买 (不限额)</b>：额度充足，可随意大额申购。<br>
+🟡 <b>能买 (限额 X 元)</b>：可以买！单日累计不可超过此金额（如限额100元，每天买100元定投即可成交）。<br>
+🔴 <b>不能买 (已暂停)</b>：完全关闭申购，单日限额为 0 元。<br>
+<i>数据源自公开交易接口，实际申购请以基金公司最新公告与各销售渠道为准。</i>
+</div>""", unsafe_allow_html=True)
