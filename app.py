@@ -201,11 +201,13 @@ with tab1:
     display_df["单日限额"] = display_df["limit_amount"].apply(format_limit_text)
     display_df["起购金额"] = display_df["min_buy"].apply(lambda x: f"{x}元" if str(x) != "--" else "--")
     display_df["日涨跌幅"] = display_df["day_change"].apply(lambda x: f"{x}%" if x != "--" else "--")
+    display_df["近1年收益"] = display_df.get("syl_1y", pd.Series(["--"] * len(display_df))).apply(lambda x: f"{x}%" if str(x) != "--" else "--")
+    display_df["年化跟踪误差"] = display_df.get("tracking_error", pd.Series(["--"] * len(display_df))).apply(lambda x: str(x) if str(x) != "--" else "--")
     display_df["官方验证链接"] = display_df["code"].apply(lambda c: f"https://fund.eastmoney.com/{c}.html")
 
     table_view = display_df[[
-        "code", "官方验证链接", "name", "index", "share_type", "能否购买", "单日限额", "起购金额", 
-        "channel_note", "sgzt_raw", "nav", "日涨跌幅", "company"
+        "code", "官方验证链接", "name", "index", "share_type", "能否购买", "单日限额", 
+        "年化跟踪误差", "近1年收益", "起购金额", "channel_note", "sgzt_raw", "nav", "日涨跌幅", "company"
     ]].rename(columns={
         "code": "代码",
         "name": "基金名称",
@@ -237,6 +239,10 @@ with tab1:
                 <span>🎯 指数: <b>{row['index']}</b> ({row['share_type']})</span>
                 <span>💰 单日限额: <b style="color:{badge_color};">{row['单日限额']}</b></span>
             </div>
+            <div style="display: flex; justify-content: space-between; color: #444; font-size: 13px; margin-bottom: 4px;">
+                <span>📊 跟踪误差: <b style="color:#1565c0;">{row['年化跟踪误差']}</b></span>
+                <span>📈 近1年收益: <b style="color:#c62828;">{row['近1年收益']}</b></span>
+            </div>
             <div style="display: flex; justify-content: space-between; color: #777; font-size: 13px;">
                 <span>起购: {row['起购金额']} | {row['company']}</span>
                 <span>净值: {row['nav']} ({row['日涨跌幅']})</span>
@@ -263,6 +269,8 @@ with tab1:
             "标的指数": st.column_config.TextColumn("指数分类", width="medium"),
             "能否购买": st.column_config.TextColumn("购买权限", width="medium"),
             "单日限额": st.column_config.TextColumn("单日最高可买", width="medium"),
+            "年化跟踪误差": st.column_config.TextColumn("年化跟踪误差(偏离度)", width="small"),
+            "近1年收益": st.column_config.TextColumn("近1年收益率", width="small"),
             "起购金额": st.column_config.TextColumn("最低起购", width="small"),
             "直销渠道特殊情报": st.column_config.TextColumn("💡 直销自营情报", width="large"),
             "最新净值": st.column_config.TextColumn("净值", width="small"),

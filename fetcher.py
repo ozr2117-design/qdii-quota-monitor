@@ -98,6 +98,17 @@ def fetch_single_fund(item: dict) -> dict:
                 except Exception as e:
                     print(f"Error reading direct sales config: {e}")
 
+            # 获取年化跟踪误差 (偏离度)
+            tracking_error = "--"
+            try:
+                page_url = f"https://fund.eastmoney.com/{code}.html"
+                page_html = requests.get(page_url, headers=headers, timeout=4).content.decode("utf-8", errors="ignore")
+                m = re.search(r"年化跟踪误差.*?([0-9\.]+\s*%)", page_html)
+                if m:
+                    tracking_error = m.group(1).strip()
+            except Exception:
+                pass
+
             return {
                 "code": code,
                 "name": official_name,
@@ -114,6 +125,8 @@ def fetch_single_fund(item: dict) -> dict:
                 "nav": data.get("DWJZ", "--"),
                 "nav_date": data.get("FSRQ", "--"),
                 "day_change": data.get("RZDF", "--"),
+                "syl_1y": data.get("SYL_1N", "--"),
+                "tracking_error": tracking_error,
                 "company": data.get("JJGS", "--"),
                 "manager": data.get("JJJL", "--"),
                 "min_buy": data.get("MINSG", "10"),
