@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="场外标普/纳指被动基金额度监控",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # 自定义苹果风格响应式 CSS 样式
