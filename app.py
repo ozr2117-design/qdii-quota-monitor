@@ -203,6 +203,15 @@ st.markdown("""
         font-weight: 500;
     }
 
+    .top-fund-item {
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 10px;
+        padding: 9px 12px;
+        margin-bottom: 7px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
     .stDataFrame {
         border-radius: 8px;
         overflow: hidden;
@@ -459,34 +468,64 @@ with tab1:
     )
 
 with tab2:
-    st.subheader("🏆 今日能买且额度最高 TOP 榜单")
+    st.caption("🏆 今日各指数可买标的中单日限额最高的前 10 只份额")
     
     top_funds = df[df["limit_amount"] > 0].sort_values(by="limit_amount", ascending=False)
     
     col_l, col_r = st.columns(2)
     
+    def render_top_list(funds_subset):
+        items_html = []
+        for _, r in funds_subset.iterrows():
+            amt = r["limit_amount"]
+            if amt >= 999999999:
+                amt_str = "不限额"
+                amt_color = "#2e7d32"
+                amt_bg = "#e8f5e9"
+            elif amt >= 10000:
+                amt_str = f"限额 {amt/10000:.1f}万/日"
+                amt_color = "#b78103"
+                amt_bg = "#fff8e1"
+            else:
+                amt_str = f"限额 {int(amt):,}元/日"
+                amt_color = "#b78103"
+                amt_bg = "#fff8e1"
+
+            note_badge = f'<span style="color:#e65100; font-weight:500;"> · {r["channel_note"]}</span>' if r.get('channel_note') else ''
+
+            item = (
+                f'<div class="top-fund-item">'
+                f'<div style="display:flex; justify-content:space-between; align-items:center;">'
+                f'<span style="font-size:13px; font-weight:600; color:#1d1d1f;"><span style="color:#0071e3;">{r["code"]}</span> {r["name"]}</span>'
+                f'<span style="font-size:11px; font-weight:600; color:{amt_color}; background:{amt_bg}; padding:2px 7px; border-radius:10px; white-space:nowrap; margin-left:6px;">{amt_str}</span>'
+                f'</div>'
+                f'<div style="font-size:11px; color:#86868b; margin-top:3px;">'
+                f'<span>起购: {r.get("min_buy", "10")}元</span>'
+                f'{note_badge}'
+                f'</div>'
+                f'</div>'
+            )
+            items_html.append(item)
+        return "".join(items_html)
+
     with col_l:
-        st.markdown("#### 🟢 标普500可用额度最高")
+        st.markdown('<div style="font-size:13px; font-weight:600; color:#1d1d1f; margin:4px 0 8px 0;">🟢 标普500 可用额度最高 TOP 10</div>', unsafe_allow_html=True)
         sp500_top = top_funds[top_funds["index"] == "标普500"].head(10)
         if len(sp500_top) > 0:
-            for _, r in sp500_top.iterrows():
-                amt_str = "🟢 不限额 (充足)" if r["limit_amount"] >= 999999999 else f"🟡 限额 {int(r['limit_amount']):,} 元/日"
-                st.markdown(f"**[{r['code']}] {r['name']}**  \n👉 权限: `{amt_str}` | 起购: `{r.get('min_buy', '10')}元` | {r['company']}")
+            st.markdown(render_top_list(sp500_top), unsafe_allow_html=True)
         else:
             st.info("标普500当前暂无可申购份额")
 
     with col_r:
-        st.markdown("#### 🔵 纳斯达克100可用额度最高")
+        st.markdown('<div style="font-size:13px; font-weight:600; color:#1d1d1f; margin:4px 0 8px 0;">🔵 纳斯达克100 可用额度最高 TOP 10</div>', unsafe_allow_html=True)
         nasdaq_top = top_funds[top_funds["index"].isin(["纳斯达克100", "纳斯达克科技"])].head(10)
         if len(nasdaq_top) > 0:
-            for _, r in nasdaq_top.iterrows():
-                amt_str = "🟢 不限额 (充足)" if r["limit_amount"] >= 999999999 else f"🟡 限额 {int(r['limit_amount']):,} 元/日"
-                st.markdown(f"**[{r['code']}] {r['name']}**  \n👉 权限: `{amt_str}` | 起购: `{r.get('min_buy', '10')}元` | {r['company']}")
+            st.markdown(render_top_list(nasdaq_top), unsafe_allow_html=True)
         else:
             st.info("纳斯达克相关基金当前暂无可申购份额")
 
 with tab3:
-    st.subheader("📜 最近额度变动记录")
+    st.caption("📜 自动监测每日各标的限购额度升降与状态变更明细")
     if history:
         hist_df = pd.DataFrame(history)
         
