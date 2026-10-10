@@ -4,12 +4,110 @@ import re
 import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
+from bs4 import BeautifulSoup
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 FUNDS_FILE = os.path.join(os.path.dirname(__file__), "funds.json")
 STATUS_FILE = os.path.join(DATA_DIR, "fund_status.json")
 HISTORY_FILE = os.path.join(DATA_DIR, "history.json")
 DIRECT_SALES_FILE = os.path.join(DATA_DIR, "direct_sales.json")
+
+
+def extract_morningstar_benchmark(code: str) -> dict:
+    """
+    爬取晨星 (Morningstar) 官方数据：
+    获取近1年本基金相对业绩比较基准的实际超额/跑输差值。
+    对于指数型QDII，跑输主要来自于管理费托管费及外汇折算损耗：
+    - 跑赢或跑输 < 1.0%：极佳 (复制精度高，损耗极低)
+    - 跑输 1.0% ~ 2.0%：正常 (正常费率损耗区间)
+    - 跑输 > 2.0%：偏大 (超额摩擦损耗过高，需谨慎)
+    - 暂无数据：次新基金 (成立不满1年)
+    """
+    url = f"https://www.morningstar.cn/fund/{code}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    default_res = {
+        "ms_fund_1y": "--",
+        "ms_benchmark_1y": "--",
+        "ms_diff": "--",
+        "ms_diff_num": None,
+        "ms_eval": "次新/暂无",
+        "ms_eval_label": "次新",
+        "ms_badge_type": "gray"
+    }
+    try:
+        r = requests.get(url, headers=headers, timeout=6)
+        if r.status_code != 200:
+            return default_res
+        
+        soup = BeautifulSoup(r.text, "html.parser")
+        tables = soup.find_all("table")
+        
+        for t in tables:
+            rows = t.find_all("tr")
+            if not rows:
+                continue
+            
+            header_cols = [c.get_text(strip=True) for c in rows[0].find_all(["th", "td"])]
+            if "近一年" in header_cols:
+                idx_1y = header_cols.index("近一年")
+                fund_1y = None
+                bm_1y = None
+                
+                for r_elem in rows[1:]:
+                    cols = [c.get_text(strip=True) for c in r_elem.find_all(["th", "td"])]
+                    if not cols:
+                        continue
+                    row_name = cols[0]
+                    if "本基金" in row_name and len(cols) > idx_1y:
+                        try:
+                            val_str = cols[idx_1y].replace("%", "").strip()
+                            if val_str and val_str != "-":
+                                fund_1y = float(val_str)
+                        except ValueError:
+                            pass
+                    elif "业绩比较基准" in row_name and len(cols) > idx_1y:
+                        try:
+                            val_str = cols[idx_1y].replace("%", "").strip()
+                            if val_str and val_str != "-":
+                                bm_1y = float(val_str)
+                        except ValueError:
+                            pass
+                
+                if fund_1y is not None and bm_1y is not None:
+                    diff = round(fund_1y - bm_1y, 2)
+                    if diff >= 0:
+                        eval_text = f"跑赢 +{diff:.2f}%"
+                        badge_type = "green"
+                        eval_label = "极强"
+                    elif diff >= -1.0:
+                        eval_text = f"跑输 {abs(diff):.2f}%"
+                        badge_type = "green"
+                        eval_label = "极佳"
+                    elif diff >= -2.0:
+                        eval_text = f"跑输 {abs(diff):.2f}%"
+                        badge_type = "orange"
+                        eval_label = "正常"
+                    else:
+                        eval_text = f"跑输 {abs(diff):.2f}%"
+                        badge_type = "red"
+                        eval_label = "偏大"
+                    
+                    return {
+                        "ms_fund_1y": f"{fund_1y:.2f}%",
+                        "ms_benchmark_1y": f"{bm_1y:.2f}%",
+                        "ms_diff": f"{diff:+.2f}%",
+                        "ms_diff_num": diff,
+                        "ms_eval": eval_text,
+                        "ms_eval_label": eval_label,
+                        "ms_badge_type": badge_type
+                    }
+    except Exception:
+        pass
+        
+    return default_res
+
 
 
 def parse_quota_limit(sgzt_text: str, buy_flag: bool = None):
@@ -109,6 +207,9 @@ def fetch_single_fund(item: dict) -> dict:
             except Exception:
                 pass
 
+            # 获取晨星相对基准偏离度 (Morningstar Benchmark Tracking)
+            ms_info = extract_morningstar_benchmark(code)
+
             return {
                 "code": code,
                 "name": official_name,
@@ -127,6 +228,13 @@ def fetch_single_fund(item: dict) -> dict:
                 "day_change": data.get("RZDF", "--"),
                 "syl_1y": data.get("SYL_1N", "--"),
                 "tracking_error": tracking_error,
+                "ms_diff": ms_info.get("ms_diff", "--"),
+                "ms_diff_num": ms_info.get("ms_diff_num"),
+                "ms_eval": ms_info.get("ms_eval", "--"),
+                "ms_eval_label": ms_info.get("ms_eval_label", "--"),
+                "ms_badge_type": ms_info.get("ms_badge_type", "gray"),
+                "ms_fund_1y": ms_info.get("ms_fund_1y", "--"),
+                "ms_benchmark_1y": ms_info.get("ms_benchmark_1y", "--"),
                 "company": data.get("JJGS", "--"),
                 "manager": data.get("JJJL", "--"),
                 "min_buy": data.get("MINSG", "10"),
@@ -154,6 +262,13 @@ def fetch_single_fund(item: dict) -> dict:
         "manager": "--",
         "min_buy": "--",
         "fund_size": "--",
+        "ms_diff": "--",
+        "ms_diff_num": None,
+        "ms_eval": "--",
+        "ms_eval_label": "--",
+        "ms_badge_type": "gray",
+        "ms_fund_1y": "--",
+        "ms_benchmark_1y": "--",
         "success": False
     }
 

@@ -178,6 +178,14 @@ st.markdown("""
         background: #f0f6ff;
         color: #0066cc;
     }
+    .tag-green {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    .tag-orange {
+        background: #fff8e1;
+        color: #b78103;
+    }
     .tag-red {
         background: #fff2f2;
         color: #d32f2f;
@@ -269,8 +277,41 @@ st.markdown("""
     }
     .col-error {
         white-space: nowrap;
-        color: #0066cc;
         font-weight: 500;
+    }
+    .badge-ms-green {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid rgba(46, 125, 50, 0.2);
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+    .badge-ms-orange {
+        background: #fff8e1;
+        color: #b78103;
+        border: 1px solid rgba(183, 129, 3, 0.2);
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+    .badge-ms-red {
+        background: #ffebee;
+        color: #c62828;
+        border: 1px solid rgba(198, 40, 40, 0.2);
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+    .badge-ms-gray {
+        background: #f5f5f7;
+        color: #86868b;
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-size: 10px;
     }
     .col-return {
         white-space: nowrap;
@@ -502,6 +543,15 @@ with tab1:
 with tab2:
     st.caption(f"当前显示 **{len(filtered_df)}** 只可买基金（已自动过滤暂停申购标的，可在左侧切换）")
 
+    with st.expander("💡 什么是「近1年相对基准 (晨星)」？怎么看好坏？", expanded=False):
+        st.markdown("""<div style="font-size:12px; line-height:1.6; color:#48484a; padding:4px 0;">
+<b>核心逻辑：</b> QDII 指数基金受海外管理费、托管费、外汇兑换及现金仓位损耗影响，收益通常略低于海外指数本身。<br>
+• <span class="badge-ms-green">极佳 / 跑赢</span> <b>跑输 &lt; 1.0% 或跑赢</b>：复制精度极高，管理磨损极小，属于<b>首选优质标的</b>。<br>
+• <span class="badge-ms-orange">正常</span> <b>跑输 1.0% ~ 2.0%</b>：处于正常的 QDII 外汇与运营摩擦区间。<br>
+• <span class="badge-ms-red">偏大</span> <b>跑输 &gt; 2.0%</b>：跟踪磨损较大，长期持有会被吃掉较多收益，需谨慎。<br>
+• <span class="badge-ms-gray">次新</span> <b>次新标的</b>：成立或转型不足 1 年，晨星暂无完整近 1 年基准对比。
+</div>""", unsafe_allow_html=True)
+
     # 格式化展示数据
     display_df = filtered_df.copy()
     
@@ -518,11 +568,11 @@ with tab2:
     display_df["单日限额"] = display_df["limit_amount"].apply(format_limit_text)
     display_df["起购金额"] = display_df["min_buy"].apply(lambda x: f"{x}元" if str(x) != "--" else "--")
     display_df["近1年收益"] = display_df.get("syl_1y", pd.Series(["--"] * len(display_df))).apply(lambda x: f"{x}%" if str(x) != "--" else "--")
-    display_df["年化跟踪误差"] = display_df.get("tracking_error", pd.Series(["--"] * len(display_df))).apply(lambda x: str(x) if str(x) != "--" else "--")
     display_df["直销渠道情报"] = display_df["channel_note"].apply(lambda x: x if x else "--")
+    display_df["近1年相对基准"] = display_df.apply(lambda r: f"{r.get('ms_diff', '--')} ({r.get('ms_eval_label', '--')})" if r.get('ms_diff') not in [None, "--"] else "次新标的", axis=1)
 
     table_view = display_df[[
-        "code", "name", "index", "单日限额", "年化跟踪误差", "近1年收益", "起购金额", "直销渠道情报"
+        "code", "name", "index", "单日限额", "近1年相对基准", "近1年收益", "起购金额", "直销渠道情报"
     ]].rename(columns={
         "code": "代码",
         "name": "基金名称",
@@ -538,6 +588,18 @@ with tab2:
             if row["channel_note"] else ""
         )
 
+        diff = row.get("ms_diff", "--")
+        eval_label = row.get("ms_eval_label", "--")
+        badge_type = row.get("ms_badge_type", "gray")
+        if badge_type == "green":
+            ms_card_tag = f'<span class="metric-tag tag-green">🎯 基准 <b>{diff} ({eval_label})</b></span>'
+        elif badge_type == "orange":
+            ms_card_tag = f'<span class="metric-tag tag-orange">🎯 基准 <b>{diff} ({eval_label})</b></span>'
+        elif badge_type == "red":
+            ms_card_tag = f'<span class="metric-tag tag-red">🎯 基准 <b>{diff} ({eval_label})</b></span>'
+        else:
+            ms_card_tag = f'<span class="metric-tag tag-gray">🎯 基准 <b>次新</b></span>'
+
         card = (
             f'<div class="apple-fund-card">'
             f'<div class="card-header">'
@@ -548,7 +610,7 @@ with tab2:
             f'<span>💰 单日限额: <b style="color:#2e7d32; font-size:13px;">{row["单日限额"]}</b></span>'
             f'</div>'
             f'<div class="card-metrics-row">'
-            f'<span class="metric-tag tag-blue">📊 跟踪误差 <b>{row["年化跟踪误差"]}</b></span>'
+            f'{ms_card_tag}'
             f'<span class="metric-tag tag-red">📈 近1年 <b>{row["近1年收益"]}</b></span>'
             f'<span class="metric-tag tag-gray">起购 <b>{row["起购金额"]}</b></span>'
             f'</div>'
@@ -567,13 +629,31 @@ with tab2:
             f'<div class="col-channel">💡 {row["channel_note"].replace("💡 ", "")}</div>'
             if row["channel_note"] else '<span style="color:#c7c7cc;">--</span>'
         )
+
+        diff = row.get("ms_diff", "--")
+        eval_label = row.get("ms_eval_label", "--")
+        badge_type = row.get("ms_badge_type", "gray")
+        fund_1y = row.get("ms_fund_1y", "--")
+        bm_1y = row.get("ms_benchmark_1y", "--")
+        
+        if fund_1y != "--" and bm_1y != "--":
+            tooltip = f"近1年: 基金 {fund_1y} vs 指数基准 {bm_1y}"
+        else:
+            tooltip = "成立不足1年暂无对比"
+            
+        if diff == "--" or not diff:
+            ms_cell_html = f'<span class="badge-ms-gray" title="{tooltip}">次新标的</span>'
+        else:
+            badge_cls = "badge-ms-green" if badge_type == "green" else ("badge-ms-orange" if badge_type == "orange" else ("badge-ms-red" if badge_type == "red" else "badge-ms-gray"))
+            ms_cell_html = f'<div title="{tooltip}" style="display:inline-flex; align-items:center; gap:4px; cursor:help;"><span>{diff}</span><span class="{badge_cls}">{eval_label}</span></div>'
+
         tr = (
             f'<tr>'
             f'<td class="col-code">{row["code"]}</td>'
             f'<td class="col-name">{row["name"]}</td>'
             f'<td class="col-index">{row["index"]}</td>'
             f'<td class="col-limit">{row["单日限额"]}</td>'
-            f'<td class="col-error">{row["年化跟踪误差"]}</td>'
+            f'<td class="col-error">{ms_cell_html}</td>'
             f'<td class="col-return">{row["近1年收益"]}</td>'
             f'<td class="col-min">{row["起购金额"]}</td>'
             f'<td>{channel_content}</td>'
@@ -589,7 +669,7 @@ with tab2:
         f'<th>基金名称</th>'
         f'<th style="width:85px;">标的指数</th>'
         f'<th style="width:105px;">单日最高限额</th>'
-        f'<th style="width:90px;">年化跟踪误差</th>'
+        f'<th style="min-width:135px;">近1年相对基准 (晨星)</th>'
         f'<th style="width:80px;">近1年收益</th>'
         f'<th style="width:70px;">起购门槛</th>'
         f'<th style="min-width:180px;">💡 直销渠道情报</th>'
