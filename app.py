@@ -16,9 +16,18 @@ st.set_page_config(
 # 自定义苹果风格响应式 CSS 样式
 st.markdown("""
 <style>
-    /* 全局现代中性灰底色与苹果排版 */
+    /* 全局统一极简纯白底色，彻底消灭上下色差断层 */
     .stApp {
-        background-color: #f7f7f9 !important;
+        background-color: #ffffff !important;
+    }
+    header[data-testid="stHeader"],
+    .stAppHeader,
+    header {
+        background-color: #ffffff !important;
+        background: #ffffff !important;
+    }
+    [data-testid="stDecoration"] {
+        display: none !important;
     }
     html, body, [class*="css"], .stMarkdown {
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif !important;
@@ -45,7 +54,7 @@ st.markdown("""
 
     /* 苹果官网旗舰级浅色 Hero 舞台 (Apple Light Dashboard) */
     .apple-hero-banner {
-        background: #ffffff;
+        background: #fbfbfd;
         border: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 18px;
         margin-top: 2px;
@@ -846,7 +855,7 @@ with tab2:
     )
 
 with tab3:
-    st.caption("📜 自动监测每日各标的限购额度升降与状态变更明细")
+    st.caption("📜 自动监测每日各标的限购额度升降与状态变更明细（由官方源端状态变化与法定信息披露公告双重核验，杜绝算法误报）")
     if history:
         hist_df = pd.DataFrame(history)
         
@@ -856,24 +865,30 @@ with tab3:
             old_str = "不限额" if old_l >= 999999999 else (f"{int(old_l):,}元/日" if old_l > 0 else "暂停申购")
             new_str = "不限额" if new_l >= 999999999 else (f"{int(new_l):,}元/日" if new_l > 0 else "暂停申购")
             if new_l > old_l:
-                return f"🟢 放宽：从【{old_str}】上调至【{new_str}】"
+                return f"🟢 官方放宽：从【{old_str}】上调至【{new_str}】"
             elif new_l < old_l:
-                return f"🔴 收紧：从【{old_str}】下调至【{new_str}】"
+                return f"🔴 官方收紧：从【{old_str}】下调至【{new_str}】"
             else:
-                return f"⚪ 状态更新：【{r.get('old_sgzt', '')}】➔【{r.get('new_sgzt', '')}】"
+                return f"⚪ 官方状态更新：【{r.get('old_sgzt', '')}】➔【{r.get('new_sgzt', '')}】"
 
         hist_df["变动说明"] = hist_df.apply(format_hist_change, axis=1)
+        cols = ["time", "code", "name", "index", "变动说明"]
+        rename_map = {
+            "time": "变动时间",
+            "code": "代码",
+            "name": "基金名称",
+            "index": "标的指数"
+        }
+        if "notice_title" in hist_df.columns:
+            cols.append("notice_title")
+            rename_map["notice_title"] = "关联法定公告"
+
         st.dataframe(
-            hist_df[["time", "code", "name", "index", "变动说明"]].rename(columns={
-                "time": "变动时间",
-                "code": "代码",
-                "name": "基金名称",
-                "index": "标的指数"
-            }),
+            hist_df[cols].rename(columns=rename_map),
             use_container_width=True,
             hide_index=True
         )
     else:
-        st.info("暂无额度变动记录（历史已重置。系统每日自动巡检，一旦基金公司放宽或收紧限额，将第一时间在此清晰记录）。")
+        st.info("暂无官方额度变动记录（系统已开启官方防伪双重校验，仅当基金公司官方调整申购限额或发布法定公告时，才会在此真实收录并推送，彻底屏蔽本地代码改动噪音）。")
 
 

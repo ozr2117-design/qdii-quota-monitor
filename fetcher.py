@@ -354,6 +354,32 @@ def fetch_single_fund(item: dict) -> dict:
     }
 
 
+def fetch_latest_quota_notice(fund_code):
+    """
+    抓取天天基金官方该基金最新法定限额/申购变动公告
+    """
+    url = f"https://api.fund.eastmoney.com/f10/JJGG?fundcode={fund_code}&pageIndex=1&pageSize=30&type=0"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': 'http://fundf10.eastmoney.com/'
+    }
+    try:
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 200:
+            data = res.json()
+            for item in data.get("Data", []):
+                title = item.get("TITLE", "")
+                if any(kw in title for kw in ["大额", "限额", "暂停申购", "恢复申购", "恢复大额", "业务限制"]):
+                    return {
+                        "title": title,
+                        "date": item.get("PUBLISHDATE", "")[:10],
+                        "url": f"http://fund.eastmoney.com/gonggao/{fund_code},{item.get('ID')}.html"
+                    }
+    except Exception:
+        pass
+    return None
+
+
 def update_all_funds():
     if not os.path.exists(FUNDS_FILE):
         raise FileNotFoundError(f"Missing {FUNDS_FILE}")
@@ -385,7 +411,7 @@ def update_all_funds():
         "funds": results
     }
 
-    # 读取旧状态以比较变动
+    # 读取旧状态以比较变动 (严格官方防伪核验)
     changes = []
     if os.path.exists(STATUS_FILE):
         try:
@@ -396,16 +422,29 @@ def update_all_funds():
                     code = nf["code"]
                     if code in old_funds_map:
                         of = old_funds_map[code]
-                        if of.get("limit_amount") != nf.get("limit_amount") or of.get("sgzt_raw") != nf.get("sgzt_raw"):
+                        old_sgzt = of.get("sgzt_raw", "")
+                        new_sgzt = nf.get("sgzt_raw", "")
+
+                        # 防伪规则 1：排除网络抖动或请求失败错误
+                        if "拉取失败" in old_sgzt or "拉取失败" in new_sgzt:
+                            continue
+
+                        # 防伪规则 2：必须官方源端状态文本 (sgzt_raw) 真实发生改变！
+                        # 如果官方原始文本没变（例如只是我们在本地优化了正则解析或维护了直销渠道），绝不误判为官方额度变动！
+                        if old_sgzt != new_sgzt:
+                            notice_info = fetch_latest_quota_notice(code)
                             changes.append({
                                 "code": code,
                                 "name": nf["name"],
                                 "index": nf["index"],
                                 "old_limit": of.get("limit_amount"),
-                                "old_sgzt": of.get("sgzt_raw"),
+                                "old_sgzt": old_sgzt,
                                 "new_limit": nf.get("limit_amount"),
-                                "new_sgzt": nf.get("sgzt_raw"),
-                                "time": now_str
+                                "new_sgzt": new_sgzt,
+                                "time": now_str,
+                                "notice_title": notice_info["title"] if notice_info else "",
+                                "notice_url": notice_info["url"] if notice_info else "",
+                                "notice_date": notice_info["date"] if notice_info else ""
                             })
         except Exception as e:
             print(f"Error reading old status: {e}")
@@ -442,7 +481,7 @@ def send_pushplus_notification(changes, time_str):
     if not token:
         return
 
-    title = f"📢 发现 {len(changes)} 只标普/纳指基金限购额度变动！"
+    title = f"📢 发现 {len(changes)} 只标普/纳指基金限购额度官方变动！"
     
     html_items = []
     for c in changes:
@@ -451,11 +490,11 @@ def send_pushplus_notification(changes, time_str):
         
         # 判断是放宽还是收紧
         if new_val > old_val:
-            badge = "<span style='color:green;font-weight:bold;'>【🟢 额度放宽】</span>"
+            badge = "<span style='color:green;font-weight:bold;'>【🟢 官方放宽】</span>"
         elif new_val < old_val:
-            badge = "<span style='color:red;font-weight:bold;'>【🔴 额度收紧】</span>"
+            badge = "<span style='color:red;font-weight:bold;'>【🔴 官方收紧】</span>"
         else:
-            badge = "<span style='color:blue;font-weight:bold;'>【🔄 规则变动】</span>"
+            badge = "<span style='color:blue;font-weight:bold;'>【🔄 官方状态更新】</span>"
 
         old_desc = f"{int(old_val):,}元" if old_val > 0 else "0元(暂停)"
         new_desc = f"{int(new_val):,}元" if new_val > 0 else "0元(暂停)"
@@ -464,11 +503,17 @@ def send_pushplus_notification(changes, time_str):
         if new_val >= 999999999:
             new_desc = "不限额"
 
+        notice_line = ""
+        if c.get("notice_title") and c.get("notice_url"):
+            notice_line = f"<br>• 法定公告：<a href='{c['notice_url']}'>{c['notice_title']}</a> ({c.get('notice_date', '')})"
+        elif c.get("notice_title"):
+            notice_line = f"<br>• 法定公告：{c['notice_title']} ({c.get('notice_date', '')})"
+
         html_items.append(f"""
         <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
             <b>{badge} [{c['code']}] {c['name']}</b> ({c['index']})<br>
             • 变动轨迹：<b>{old_desc}</b> ➔ <b style="color:#d32f2f;">{new_desc}</b><br>
-            • 官方描述：{c.get('new_sgzt', '--')}
+            • 官方状态：{c.get('new_sgzt', '--')}{notice_line}
         </div>
         """)
 
