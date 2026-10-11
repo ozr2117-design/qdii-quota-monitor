@@ -1,5 +1,25 @@
 [
   {
+    "code": "021838",
+    "name": "嘉实纳斯达克100ETF发起联接(QDII)I人民币",
+    "index": "纳斯达克100",
+    "old_limit": 0,
+    "old_sgzt": "暂停申购",
+    "new_limit": 0,
+    "new_sgzt": "拉取失败",
+    "time": "2026-10-11 02:31:38"
+  },
+  {
+    "code": "022523",
+    "name": "天弘标普500发起(QDII-FOF)D",
+    "index": "标普500",
+    "old_limit": 0,
+    "old_sgzt": "限大额",
+    "new_limit": 0,
+    "new_sgzt": "拉取失败",
+    "time": "2026-10-11 02:31:38"
+  },
+  {
     "code": "017093",
     "name": "景顺长城纳斯达克科技ETF联接(QDII)C人民币",
     "index": "纳斯达克科技",
