@@ -37,38 +37,118 @@ st.markdown("""
         }
     }
 
-    /* 苹果风头部组件 */
-    .apple-header {
-        margin-top: 6px;
-        margin-bottom: 12px;
-        padding-top: 6px;
+    /* 苹果官网极客级 Hero 舞台 (iPhone Pro 质感黑夜风格) */
+    .apple-hero-banner {
+        background: #000000;
+        border-radius: 18px;
+        margin-top: 2px;
+        margin-bottom: 14px;
+        overflow: hidden;
+        color: #f5f5f7;
+        text-align: center;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", Helvetica, Arial, sans-serif;
     }
-    .apple-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #1d1d1f;
-        letter-spacing: -0.015em;
-        line-height: 1.4;
-        margin-bottom: 6px;
+    .apple-nav-bar {
+        height: 38px;
+        background: rgba(22, 22, 23, 0.9);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        font-size: 11px;
+        color: #86868b;
+        padding: 0 12px;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    .apple-nav-bar::-webkit-scrollbar {
+        display: none;
+    }
+    .apple-nav-logo {
+        font-size: 13px;
+        color: #f5f5f7;
+        line-height: 1;
+        margin-right: 2px;
+    }
+    .apple-nav-link {
+        color: #86868b;
+        font-weight: 400;
+        transition: color 0.15s ease;
+        letter-spacing: -0.01em;
+    }
+    .apple-nav-link.active {
+        color: #f5f5f7;
+        font-weight: 500;
+    }
+    .apple-hero-body {
+        padding: 26px 16px 24px 16px;
+    }
+    .apple-hero-headline {
+        font-size: 32px;
+        font-weight: 700;
+        color: #f5f5f7;
+        letter-spacing: -0.025em;
+        line-height: 1.15;
+        margin: 0 0 8px 0;
     }
     @media screen and (min-width: 769px) {
-        .apple-title {
-            font-size: 25px;
+        .apple-hero-headline {
+            font-size: 40px;
+        }
+        .apple-hero-body {
+            padding: 32px 20px 28px 20px;
         }
     }
-    .apple-meta-bar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        align-items: center;
-    }
-    .apple-pill {
-        background: #f5f5f7;
-        color: #86868b;
-        font-size: 11px;
-        padding: 3px 8px;
-        border-radius: 12px;
+    .apple-hero-subhead {
+        font-size: 16px;
         font-weight: 400;
+        color: #86868b;
+        letter-spacing: -0.015em;
+        line-height: 1.35;
+        margin: 0 0 18px 0;
+    }
+    @media screen and (min-width: 769px) {
+        .apple-hero-subhead {
+            font-size: 19px;
+        }
+    }
+    .apple-hero-ctas {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .apple-btn-blue {
+        background: #0071e3;
+        color: #ffffff !important;
+        font-size: 13px;
+        font-weight: 400;
+        padding: 6px 18px;
+        border-radius: 980px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: -0.01em;
+        box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+    }
+    .apple-btn-outlined {
+        background: transparent;
+        color: #2997ff !important;
+        border: 1px solid #2997ff;
+        font-size: 13px;
+        font-weight: 400;
+        padding: 5px 16px;
+        border-radius: 980px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: -0.01em;
     }
 
     /* 苹果小组件风格统计卡片 (紧凑精致，横向网格) */
@@ -494,13 +574,26 @@ sp500_can_buy = len(df[(df["index"] == "标普500") & (df["limit_amount"] > 0)])
 ndx_can_buy = len(df[(df["index"].isin(["纳斯达克100", "纳斯达克科技"])) & (df["limit_amount"] > 0)])
 can_buy_pct = int(round(can_buy_funds / total_funds * 100)) if total_funds > 0 else 0
 
-header_html = f"""<div class="apple-header">
-<div class="apple-title">小鸡观察基地</div>
-<div class="apple-meta-bar">
-<span class="apple-pill">🕒 更新时间: {updated_at}</span>
-<span class="apple-pill">💡 专注美股被动QDII</span>
-<span class="apple-pill">🎯 已自动过滤不可买标的</span>
-</div>
+header_html = f"""<div class="apple-hero-banner">
+    <div class="apple-nav-bar">
+        <span class="apple-nav-logo"></span>
+        <span class="apple-nav-link active">额度雷达</span>
+        <span class="apple-nav-link">标普500</span>
+        <span class="apple-nav-link">纳斯达克100</span>
+        <span class="apple-nav-link">直销放水</span>
+        <span class="apple-nav-link">定投通道</span>
+        <span class="apple-nav-link">晨星对标</span>
+        <span class="apple-nav-link">费率透明</span>
+        <span class="apple-nav-link" style="opacity:0.75;">🔍</span>
+    </div>
+    <div class="apple-hero-body">
+        <div class="apple-hero-headline">小鸡观察基地</div>
+        <div class="apple-hero-subhead">专注美股被动 QDII · 场外额度实时雷达。</div>
+        <div class="apple-hero-ctas">
+            <span class="apple-btn-blue">今日可买 {can_buy_funds} 只标的</span>
+            <span class="apple-btn-outlined">实时监控中 · 🕒 {updated_at}</span>
+        </div>
+    </div>
 </div>
 <div class="apple-stats-grid">
 <div class="apple-stat-card">
