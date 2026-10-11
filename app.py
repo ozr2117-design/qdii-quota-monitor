@@ -295,64 +295,83 @@ st.markdown("""
         border: 1px solid #e4e4e7;
     }
 
-    /* 电脑端现代专业数据表格 (字号14px、对比度高、行高舒适) */
+    /* 业界高标准金融数据卡片式表格 (Fintech Data Table) */
+    .desktop-table-view {
+        display: block !important;
+        margin-top: 14px;
+        margin-bottom: 24px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        overflow-x: auto;
+    }
     .apple-desktop-table {
         width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        background: #ffffff;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 14px;
-        overflow: hidden;
+        border-collapse: collapse;
         font-size: 14px;
-        margin-top: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+        text-align: left;
     }
     .apple-desktop-table th {
-        background-color: #fbfbfd;
-        color: #48484a;
+        background-color: #f1f5f9;
+        color: #334155;
         font-weight: 600;
         text-align: left;
-        padding: 12px 14px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        padding: 13px 14px;
+        border-bottom: 2px solid #94a3b8;
+        border-right: 1px solid #e2e8f0;
         white-space: nowrap;
         font-size: 13px;
         letter-spacing: -0.01em;
     }
+    .apple-desktop-table th:last-child {
+        border-right: none;
+    }
     .apple-desktop-table td {
-        padding: 12px 14px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        color: #1d1d1f;
+        padding: 13px 14px;
+        border-bottom: 1px solid #e2e8f0;
+        border-right: 1px solid #f1f5f9;
+        color: #1e293b;
         vertical-align: middle;
-        line-height: 1.45;
+        line-height: 1.5;
         font-size: 14px;
+    }
+    .apple-desktop-table td:last-child {
+        border-right: none;
+    }
+    .apple-desktop-table tr:nth-child(even) td {
+        background-color: #f8fafc;
+    }
+    .apple-desktop-table tr:hover td {
+        background-color: #e2e8f0 !important;
     }
     .apple-desktop-table tr:last-child td {
         border-bottom: none;
     }
-    .apple-desktop-table tr:hover td {
-        background-color: #f8f9fa;
-    }
     .col-code {
-        font-family: -apple-system-monospaced, "SF Pro Text", monospace;
-        color: #0066cc;
-        font-weight: 600;
+        font-family: -apple-system-monospaced, "SF Pro Text", Consolas, monospace;
+        color: #0284c7;
+        font-weight: 700;
         font-size: 14px;
         white-space: nowrap;
     }
     .col-name {
-        font-weight: 500;
+        font-weight: 600;
         font-size: 14px;
+        color: #0f172a;
         white-space: normal;
         word-break: break-all;
+        line-height: 1.4;
     }
     .col-index {
         white-space: nowrap;
         font-size: 14px;
+        color: #475569;
+        font-weight: 500;
     }
     .col-limit {
         white-space: nowrap;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 14px;
         color: #15803d;
     }
@@ -389,9 +408,9 @@ st.markdown("""
         font-weight: 600;
     }
     .badge-ms-gray {
-        background: #f4f4f5;
-        color: #71717a;
-        border: 1px solid #e4e4e7;
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #cbd5e1;
         padding: 2px 8px;
         border-radius: 6px;
         font-size: 12px;
@@ -399,14 +418,14 @@ st.markdown("""
     .col-return {
         white-space: nowrap;
         color: #dc2626;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 14px;
     }
     .col-fee {
         white-space: nowrap;
         font-weight: 500;
         font-size: 14px;
-        color: #1d1d1f;
+        color: #1e293b;
     }
     .badge-fee-low {
         background: #f0fdf4;
@@ -418,9 +437,9 @@ st.markdown("""
         font-weight: 600;
     }
     .badge-fee-mid {
-        background: #f4f4f5;
-        color: #52525b;
-        border: 1px solid #e4e4e7;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
         padding: 2px 8px;
         border-radius: 6px;
         font-size: 12px;
@@ -435,12 +454,16 @@ st.markdown("""
         font-weight: 600;
     }
     .col-channel {
-        white-space: normal;
-        word-break: break-word;
-        color: #b45309;
-        font-size: 13px;
+        display: inline-block;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 6px;
+        padding: 5px 9px;
+        color: #92400e;
+        font-size: 12px;
         line-height: 1.45;
         font-weight: 500;
+        word-break: break-word;
     }
 
     /* 响应式适配：大屏显示表格，小屏显示卡片流 */
@@ -830,14 +853,14 @@ with tab2:
         f'<div class="desktop-table-view">'
         f'<table class="apple-desktop-table">'
         f'<thead><tr>'
-        f'<th style="width:70px;">代码</th>'
-        f'<th>基金名称</th>'
-        f'<th style="width:85px;">标的指数</th>'
-        f'<th style="width:105px;">单日最高限额</th>'
-        f'<th style="min-width:135px;">近1年相对基准 (晨星)</th>'
-        f'<th style="width:80px;">近1年收益</th>'
-        f'<th style="width:95px;">综合年费率</th>'
-        f'<th style="min-width:180px;">💡 直销渠道情报</th>'
+        f'<th style="width:75px;">代码</th>'
+        f'<th style="min-width:180px;">基金名称</th>'
+        f'<th style="width:95px;">标的指数</th>'
+        f'<th style="width:115px;">单日最高限额</th>'
+        f'<th style="min-width:145px;">近1年相对基准 (晨星)</th>'
+        f'<th style="width:90px;">近1年收益</th>'
+        f'<th style="width:105px;">综合年费率</th>'
+        f'<th style="min-width:210px;">💡 直销渠道情报</th>'
         f'</tr></thead>'
         f'<tbody>{"".join(table_rows)}</tbody>'
         f'</table>'
