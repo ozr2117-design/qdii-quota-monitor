@@ -855,7 +855,7 @@ with tab2:
     )
 
 with tab3:
-    st.caption("📜 自动监测每日各标的限购额度升降与状态变更明细（由官方源端状态变化与法定信息披露公告双重核验，杜绝算法误报）")
+    st.caption("📜 每日各标的限购额度升降与状态变更明细")
     if history:
         hist_df = pd.DataFrame(history)
         
@@ -865,11 +865,11 @@ with tab3:
             old_str = "不限额" if old_l >= 999999999 else (f"{int(old_l):,}元/日" if old_l > 0 else "暂停申购")
             new_str = "不限额" if new_l >= 999999999 else (f"{int(new_l):,}元/日" if new_l > 0 else "暂停申购")
             if new_l > old_l:
-                return f"🟢 官方放宽：从【{old_str}】上调至【{new_str}】"
+                return f"🟢 放宽：从【{old_str}】上调至【{new_str}】"
             elif new_l < old_l:
-                return f"🔴 官方收紧：从【{old_str}】下调至【{new_str}】"
+                return f"🔴 收紧：从【{old_str}】下调至【{new_str}】"
             else:
-                return f"⚪ 官方状态更新：【{r.get('old_sgzt', '')}】➔【{r.get('new_sgzt', '')}】"
+                return f"⚪ 状态更新：【{r.get('old_sgzt', '')}】➔【{r.get('new_sgzt', '')}】"
 
         hist_df["变动说明"] = hist_df.apply(format_hist_change, axis=1)
         cols = ["time", "code", "name", "index", "变动说明"]
@@ -889,6 +889,6 @@ with tab3:
             hide_index=True
         )
     else:
-        st.info("暂无官方额度变动记录（系统已开启官方防伪双重校验，仅当基金公司官方调整申购限额或发布法定公告时，才会在此真实收录并推送，彻底屏蔽本地代码改动噪音）。")
+        st.info("暂无额度变动记录。")
 
 
