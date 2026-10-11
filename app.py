@@ -868,14 +868,6 @@ with tab2:
     )
     st.markdown(desktop_table_html, unsafe_allow_html=True)
 
-    # 导出 CSV
-    csv_data = table_view.to_csv(index=False).encode('utf_8_sig')
-    st.download_button(
-        label="📥 导出当前筛选表格为 CSV",
-        data=csv_data,
-        file_name=f"qdii_quota_{datetime.date.today()}.csv",
-        mime="text/csv"
-    )
 
 with tab3:
     st.caption("📜 每日各标的限购额度升降与状态变更明细")
