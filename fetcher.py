@@ -233,7 +233,7 @@ def fetch_single_fund(item: dict) -> dict:
             else:
                 stype = item.get("type", "其他")
 
-            # 检查直销渠道特殊额度配置 (如南方App自营限额200)
+            # 检查直销渠道特殊额度配置 (如南方App自营限额200、万家App限额100)
             channel_note = ""
             if os.path.exists(DIRECT_SALES_FILE):
                 try:
@@ -241,11 +241,20 @@ def fetch_single_fund(item: dict) -> dict:
                         ds_data = json.load(f)
                         if code in ds_data:
                             cfg = ds_data[code]
-                            can_buy = True
-                            limit_val = cfg.get("limit", limit_val)
-                            status_label = f"🟡 能买 ({cfg.get('channel', '自营App')}限额 {limit_val:,}元/日)"
-                            tag = "CAN_BUY_DIRECT"
                             channel_note = cfg.get("note", "")
+                            
+                            # 严格双重校验门：
+                            # 1. 只有当专属份额 (I类/D类) 本身支持购买，或者代销处于限大额状态时，直销才可以提升额度；
+                            # 2. 如果官方接口明确完全暂停 (BUY=False 且非专属份额)，直销配置绝不可盲目覆盖为“能买”，避免景顺长城式的关门失效！
+                            is_special_share = stype in ["I类 (直销专属)", "D类"]
+                            if can_buy or is_special_share:
+                                can_buy = True
+                                limit_val = cfg.get("limit", limit_val)
+                                status_label = f"🟡 能买 ({cfg.get('channel', '自营App')}限额 {limit_val:,}元/日)"
+                                tag = "CAN_BUY_DIRECT"
+                            else:
+                                # 官方已全线关门，直销情报仅作为历史参考，保持不能买
+                                status_label = f"🔴 不能买 (直销亦已关门/额度售罄)"
                 except Exception as e:
                     print(f"Error reading direct sales config: {e}")
 
