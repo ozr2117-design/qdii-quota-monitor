@@ -16,52 +16,54 @@ st.set_page_config(
 # 自定义苹果风格响应式 CSS 样式
 st.markdown("""
 <style>
-    /* 全局苹果字体与柔和渲染 */
+    /* 全局现代中性灰底色与苹果排版 */
+    .stApp {
+        background-color: #f7f7f9 !important;
+    }
     html, body, [class*="css"], .stMarkdown {
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif !important;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        color: #1d1d1f;
     }
     
-    /* 容器边距柔和微调 (预留顶部工具栏安全距离，防止标题被遮挡) */
+    /* 容器边距柔和微调 */
     .block-container {
-        padding-top: 5rem !important;
-        padding-bottom: 2rem !important;
+        padding-top: 4.8rem !important;
+        padding-bottom: 2.5rem !important;
         max-width: 1200px !important;
     }
     @media screen and (max-width: 768px) {
         .block-container {
-            padding-top: 4.2rem !important;
-            padding-left: 0.8rem !important;
-            padding-right: 0.8rem !important;
+            padding-top: 4rem !important;
+            padding-left: 0.9rem !important;
+            padding-right: 0.9rem !important;
         }
     }
 
-    /* 苹果官网极客级 Hero 舞台 (iPhone Pro 质感黑夜风格) */
+    /* 苹果官网旗舰级浅色 Hero 舞台 (Apple Light Dashboard) */
     .apple-hero-banner {
-        background: #000000;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 18px;
         margin-top: 2px;
-        margin-bottom: 14px;
+        margin-bottom: 16px;
         overflow: hidden;
-        color: #f5f5f7;
+        color: #1d1d1f;
         text-align: center;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
     .apple-nav-bar {
-        height: 38px;
-        background: rgba(22, 22, 23, 0.9);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        height: 42px;
+        background: #fbfbfd;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 16px;
-        font-size: 11px;
-        color: #86868b;
-        padding: 0 12px;
+        gap: 20px;
+        font-size: 13px;
+        color: #6e6e73;
+        padding: 0 16px;
         overflow-x: auto;
         white-space: nowrap;
         -webkit-overflow-scrolling: touch;
@@ -70,80 +72,82 @@ st.markdown("""
         display: none;
     }
     .apple-nav-logo {
-        font-size: 13px;
-        color: #f5f5f7;
+        font-size: 15px;
+        color: #1d1d1f;
         line-height: 1;
         margin-right: 2px;
     }
     .apple-nav-link {
-        color: #86868b;
-        font-weight: 400;
+        color: #6e6e73;
+        font-weight: 500;
         transition: color 0.15s ease;
         letter-spacing: -0.01em;
     }
-    .apple-nav-link.active {
-        color: #f5f5f7;
-        font-weight: 500;
+    .apple-nav-link.active, .apple-nav-link:hover {
+        color: #0071e3;
+        font-weight: 600;
     }
     .apple-hero-body {
-        padding: 26px 16px 24px 16px;
+        padding: 30px 20px 26px 20px;
     }
     .apple-hero-headline {
-        font-size: 32px;
+        font-size: 38px;
         font-weight: 700;
-        color: #f5f5f7;
+        color: #1d1d1f;
         letter-spacing: -0.025em;
-        line-height: 1.15;
-        margin: 0 0 8px 0;
+        line-height: 1.2;
+        margin: 0 0 10px 0;
     }
-    @media screen and (min-width: 769px) {
+    @media screen and (max-width: 768px) {
         .apple-hero-headline {
-            font-size: 40px;
+            font-size: 27px;
+            margin-bottom: 8px;
         }
         .apple-hero-body {
-            padding: 32px 20px 28px 20px;
+            padding: 22px 14px 20px 14px;
         }
     }
     .apple-hero-subhead {
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 400;
-        color: #86868b;
-        letter-spacing: -0.015em;
-        line-height: 1.35;
-        margin: 0 0 18px 0;
+        color: #515154;
+        letter-spacing: -0.01em;
+        line-height: 1.4;
+        margin: 0 0 20px 0;
     }
-    @media screen and (min-width: 769px) {
+    @media screen and (max-width: 768px) {
         .apple-hero-subhead {
-            font-size: 19px;
+            font-size: 14px;
+            margin-bottom: 16px;
         }
     }
     .apple-hero-ctas {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 12px;
         flex-wrap: wrap;
     }
     .apple-btn-blue {
         background: #0071e3;
         color: #ffffff !important;
-        font-size: 13px;
-        font-weight: 400;
-        padding: 6px 18px;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px 22px;
         border-radius: 980px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         letter-spacing: -0.01em;
-        box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+        box-shadow: 0 2px 10px rgba(0, 113, 227, 0.25);
     }
-    .apple-btn-outlined {
-        background: transparent;
-        color: #2997ff !important;
-        border: 1px solid #2997ff;
-        font-size: 13px;
-        font-weight: 400;
-        padding: 5px 16px;
+    .apple-btn-secondary {
+        background: #f0f0f5;
+        color: #1d1d1f !important;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px 20px;
         border-radius: 980px;
         display: inline-flex;
         align-items: center;
@@ -151,304 +155,324 @@ st.markdown("""
         letter-spacing: -0.01em;
     }
 
-    /* 苹果小组件风格统计卡片 (紧凑精致，横向网格) */
+    /* 苹果小组件风格统计卡片 (高对比度、清晰字号) */
     .apple-stats-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        margin: 12px 0 16px 0;
+        gap: 12px;
+        margin: 14px 0 20px 0;
+    }
+    @media screen and (max-width: 768px) {
+        .apple-stats-grid {
+            gap: 8px;
+        }
     }
     .apple-stat-card {
         background: #ffffff;
-        border: 1px solid rgba(0, 0, 0, 0.06);
-        border-radius: 12px;
-        padding: 10px 12px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 14px;
+        padding: 14px 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+    @media screen and (max-width: 768px) {
+        .apple-stat-card {
+            padding: 10px 10px;
+        }
     }
     .stat-label {
-        font-size: 11px;
-        color: #86868b;
+        font-size: 13px;
+        color: #6e6e73;
         font-weight: 500;
-        margin-bottom: 3px;
+        margin-bottom: 4px;
         white-space: nowrap;
     }
+    @media screen and (max-width: 768px) {
+        .stat-label {
+            font-size: 12px;
+        }
+    }
     .stat-value {
-        font-size: 19px;
+        font-size: 26px;
         font-weight: 700;
         color: #1d1d1f;
         line-height: 1.2;
         letter-spacing: -0.02em;
     }
+    @media screen and (max-width: 768px) {
+        .stat-value {
+            font-size: 21px;
+        }
+    }
     .stat-unit {
-        font-size: 12px;
-        font-weight: 400;
+        font-size: 13px;
+        font-weight: 500;
         color: #86868b;
         margin-left: 2px;
     }
     .stat-sub {
-        font-size: 11px;
-        color: #86868b;
-        margin-top: 3px;
+        font-size: 13px;
+        color: #6e6e73;
+        margin-top: 4px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    @media screen and (max-width: 768px) {
+        .stat-sub {
+            font-size: 11px;
+        }
+    }
     .text-green {
-        color: #2e7d32;
+        color: #15803d;
     }
 
-    /* 移动端卡片流苹果风 */
+    /* TOP 榜单项卡片 */
+    .top-fund-item {
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .top-fund-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 移动端卡片流苹果风 (字号舒适、行间透气) */
     .apple-fund-card {
         background: #ffffff;
-        border: 1px solid rgba(0, 0, 0, 0.06);
-        border-radius: 12px;
-        padding: 12px 14px;
-        margin-bottom: 9px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
     }
     .card-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 7px;
+        margin-bottom: 8px;
         gap: 8px;
     }
     .fund-name {
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
         color: #1d1d1f;
-        line-height: 1.35;
+        line-height: 1.4;
         word-break: break-all;
     }
     .fund-code {
-        color: #0071e3;
+        color: #0066cc;
         font-weight: 600;
         margin-right: 4px;
-    }
-    .badge {
-        padding: 2px 7px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        white-space: nowrap;
-        flex-shrink: 0;
+        font-family: -apple-system-monospaced, "SF Pro Text", monospace;
     }
     .card-meta-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
         color: #48484a;
-        font-size: 12px;
-        margin-bottom: 6px;
+        font-size: 14px;
+        margin-bottom: 8px;
     }
     .card-metrics-row {
         display: flex;
-        gap: 6px;
-        margin-bottom: 6px;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
     }
     .metric-tag {
-        font-size: 11px;
-        padding: 2px 7px;
+        font-size: 12px;
+        padding: 3px 8px;
         border-radius: 6px;
         display: inline-flex;
         align-items: center;
         gap: 2px;
-    }
-    .tag-blue {
-        background: #f0f6ff;
-        color: #0066cc;
-    }
-    .tag-green {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-    .tag-orange {
-        background: #fff8e1;
-        color: #b78103;
-    }
-    .tag-red {
-        background: #fff2f2;
-        color: #d32f2f;
-    }
-    .tag-gray {
-        background: #f5f5f7;
-        color: #48484a;
-    }
-    .card-footer-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: #86868b;
-        font-size: 11px;
-        margin-top: 4px;
-        border-top: 1px dashed #f0f0f2;
-        padding-top: 6px;
-    }
-    .apple-link {
-        color: #0071e3 !important;
-        text-decoration: none;
-        font-size: 11px;
         font-weight: 500;
     }
-
-    .top-fund-item {
-        background: #ffffff;
-        border: 1px solid rgba(0, 0, 0, 0.06);
-        border-radius: 10px;
-        padding: 9px 12px;
-        margin-bottom: 7px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    .tag-blue {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #dbeafe;
+    }
+    .tag-green {
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #dcfce7;
+    }
+    .tag-orange {
+        background: #fefce8;
+        color: #a16207;
+        border: 1px solid #fef9c3;
+    }
+    .tag-red {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fee2e2;
+    }
+    .tag-gray {
+        background: #f4f4f5;
+        color: #52525b;
+        border: 1px solid #e4e4e7;
     }
 
-    /* 电脑端苹果风精简表格 */
+    /* 电脑端现代专业数据表格 (字号14px、对比度高、行高舒适) */
     .apple-desktop-table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
         background: #ffffff;
         border: 1px solid rgba(0, 0, 0, 0.08);
-        border-radius: 12px;
+        border-radius: 14px;
         overflow: hidden;
-        font-size: 12px;
-        margin-top: 8px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+        font-size: 14px;
+        margin-top: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
     }
     .apple-desktop-table th {
-        background-color: #fafafc;
-        color: #86868b;
+        background-color: #fbfbfd;
+        color: #48484a;
         font-weight: 600;
         text-align: left;
-        padding: 9px 10px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
         white-space: nowrap;
-        font-size: 11px;
+        font-size: 13px;
+        letter-spacing: -0.01em;
     }
     .apple-desktop-table td {
-        padding: 8px 10px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         color: #1d1d1f;
         vertical-align: middle;
-        line-height: 1.4;
+        line-height: 1.45;
+        font-size: 14px;
     }
     .apple-desktop-table tr:last-child td {
         border-bottom: none;
     }
     .apple-desktop-table tr:hover td {
-        background-color: #fbfbfd;
+        background-color: #f8f9fa;
     }
     .col-code {
         font-family: -apple-system-monospaced, "SF Pro Text", monospace;
-        color: #0071e3;
+        color: #0066cc;
         font-weight: 600;
+        font-size: 14px;
         white-space: nowrap;
     }
     .col-name {
         font-weight: 500;
+        font-size: 14px;
         white-space: normal;
         word-break: break-all;
     }
     .col-index {
         white-space: nowrap;
+        font-size: 14px;
     }
     .col-limit {
         white-space: nowrap;
         font-weight: 600;
-        color: #2e7d32;
+        font-size: 14px;
+        color: #15803d;
     }
     .col-error {
         white-space: nowrap;
         font-weight: 500;
+        font-size: 14px;
     }
     .badge-ms-green {
-        background: #e8f5e9;
-        color: #2e7d32;
-        border: 1px solid rgba(46, 125, 50, 0.2);
-        padding: 1px 6px;
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+        padding: 2px 8px;
         border-radius: 6px;
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 600;
     }
     .badge-ms-orange {
-        background: #fff8e1;
-        color: #b78103;
-        border: 1px solid rgba(183, 129, 3, 0.2);
-        padding: 1px 6px;
+        background: #fefce8;
+        color: #a16207;
+        border: 1px solid #fef08a;
+        padding: 2px 8px;
         border-radius: 6px;
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 600;
     }
     .badge-ms-red {
-        background: #ffebee;
-        color: #c62828;
-        border: 1px solid rgba(198, 40, 40, 0.2);
-        padding: 1px 6px;
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+        padding: 2px 8px;
         border-radius: 6px;
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 600;
     }
     .badge-ms-gray {
-        background: #f5f5f7;
-        color: #86868b;
-        padding: 1px 6px;
+        background: #f4f4f5;
+        color: #71717a;
+        border: 1px solid #e4e4e7;
+        padding: 2px 8px;
         border-radius: 6px;
-        font-size: 10px;
+        font-size: 12px;
     }
     .col-return {
         white-space: nowrap;
-        color: #d32f2f;
-        font-weight: 500;
+        color: #dc2626;
+        font-weight: 600;
+        font-size: 14px;
     }
     .col-fee {
         white-space: nowrap;
         font-weight: 500;
+        font-size: 14px;
         color: #1d1d1f;
     }
     .badge-fee-low {
-        background: #e8f5e9;
-        color: #2e7d32;
-        border: 1px solid rgba(46, 125, 50, 0.2);
-        padding: 1px 5px;
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+        padding: 2px 8px;
         border-radius: 6px;
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 600;
     }
     .badge-fee-mid {
-        background: #f5f5f7;
-        color: #6e6e73;
-        padding: 1px 5px;
+        background: #f4f4f5;
+        color: #52525b;
+        border: 1px solid #e4e4e7;
+        padding: 2px 8px;
         border-radius: 6px;
-        font-size: 10px;
+        font-size: 12px;
     }
     .badge-fee-high {
-        background: #fff3e0;
-        color: #e65100;
-        border: 1px solid rgba(230, 81, 0, 0.2);
-        padding: 1px 5px;
+        background: #fff7ed;
+        color: #c2410c;
+        border: 1px solid #fed7aa;
+        padding: 2px 8px;
         border-radius: 6px;
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 600;
-    }
-    .col-min {
-        white-space: nowrap;
-        color: #86868b;
     }
     .col-channel {
         white-space: normal;
         word-break: break-word;
-        color: #c45100;
-        font-size: 11px;
-        line-height: 1.35;
+        color: #b45309;
+        font-size: 13px;
+        line-height: 1.45;
+        font-weight: 500;
     }
 
-    /* 默认电脑大屏：显示表格，隐藏手机卡片流 */
+    /* 响应式适配：大屏显示表格，小屏显示卡片流 */
     .desktop-table-view {
         display: block !important;
     }
     .mobile-cards-view {
         display: none !important;
     }
-
-    /* 移动端屏幕 (宽度 <= 768px)：自动隐藏大表格，自动展示舒适卡片流 */
     @media screen and (max-width: 768px) {
         .desktop-table-view {
             display: none !important;
@@ -591,7 +615,7 @@ header_html = f"""<div class="apple-hero-banner">
         <div class="apple-hero-subhead">专注美股被动 QDII · 场外额度实时雷达。</div>
         <div class="apple-hero-ctas">
             <span class="apple-btn-blue">今日可买 {can_buy_funds} 只标的</span>
-            <span class="apple-btn-outlined">实时监控中 · 🕒 {updated_at}</span>
+            <span class="apple-btn-secondary">实时监控中 · 🕒 {updated_at}</span>
         </div>
     </div>
 </div>
@@ -631,27 +655,30 @@ with tab1:
             amt = r["limit_amount"]
             if amt >= 999999999:
                 amt_str = "不限额"
-                amt_color = "#2e7d32"
-                amt_bg = "#e8f5e9"
+                amt_color = "#15803d"
+                amt_bg = "#dcfce7"
+                amt_border = "#bbf7d0"
             elif amt >= 10000:
                 amt_str = f"限额 {amt/10000:.1f}万/日"
-                amt_color = "#b78103"
-                amt_bg = "#fff8e1"
+                amt_color = "#92400e"
+                amt_bg = "#fef3c7"
+                amt_border = "#fde68a"
             else:
                 amt_str = f"限额 {int(amt):,}元/日"
-                amt_color = "#b78103"
-                amt_bg = "#fff8e1"
+                amt_color = "#92400e"
+                amt_bg = "#fef3c7"
+                amt_border = "#fde68a"
 
-            note_badge = f'<span style="color:#e65100; font-weight:500;"> · {r["channel_note"]}</span>' if r.get('channel_note') else ''
-            dca_tag = ' · <span style="color:#2e7d32; font-weight:500;">支持定投</span>' if r.get('can_dca') else ''
+            note_badge = f'<span style="color:#b45309; font-weight:500; background:#fffbeb; padding:2px 8px; border-radius:6px; border:1px solid #fde68a;">💡 {r["channel_note"]}</span>' if r.get('channel_note') else ''
+            dca_tag = ' · <span style="color:#15803d; font-weight:600;">● 支持定投</span>' if r.get('can_dca') else ''
 
             item = (
                 f'<div class="top-fund-item">'
-                f'<div style="display:flex; justify-content:space-between; align-items:center;">'
-                f'<span style="font-size:13px; font-weight:600; color:#1d1d1f;"><span style="color:#0071e3;">{r["code"]}</span> {r["name"]}</span>'
-                f'<span style="font-size:11px; font-weight:600; color:{amt_color}; background:{amt_bg}; padding:2px 7px; border-radius:10px; white-space:nowrap; margin-left:6px;">{amt_str}</span>'
+                f'<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">'
+                f'<span style="font-size:15px; font-weight:600; color:#1d1d1f;"><span style="color:#0066cc; font-family:monospace; margin-right:4px;">{r["code"]}</span> {r["name"]}</span>'
+                f'<span style="font-size:13px; font-weight:600; color:{amt_color}; background:{amt_bg}; border:1px solid {amt_border}; padding:3px 9px; border-radius:8px; white-space:nowrap; flex-shrink:0;">{amt_str}</span>'
                 f'</div>'
-                f'<div style="font-size:11px; color:#86868b; margin-top:3px;">'
+                f'<div style="font-size:13px; color:#6e6e73; margin-top:6px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">'
                 f'<span>起购: {r.get("min_buy", "10")}元</span>'
                 f'{dca_tag}'
                 f'{note_badge}'
@@ -681,7 +708,7 @@ with tab2:
     st.caption(f"当前显示 **{len(filtered_df)}** 只可买基金（已自动过滤暂停申购标的，可在左侧切换）")
 
     with st.expander("💡 什么是「相对基准」「综合年费率」与 A/C 选基秘籍？", expanded=False):
-        st.markdown("""<div style="font-size:12px; line-height:1.6; color:#48484a; padding:4px 0;">
+        st.markdown("""<div style="font-size:13.5px; line-height:1.65; color:#374151; padding:4px 0;">
 <b>核心指标解读：</b><br>
 • <span class="badge-ms-green">极佳 / 跑赢</span> <b>相对基准跑输 &lt; 1.0% 或跑赢</b>：复制精度极高，超额摩擦损耗极小，属于<b>首选优质标的</b>。<br>
 • <span class="badge-ms-orange">正常</span> <b>跑输 1.0% ~ 2.0%</b>：处于正常的 QDII 外汇与运营摩擦区间。<br>
@@ -689,7 +716,7 @@ with tab2:
 • <span class="badge-fee-low">极省</span> <b>综合年费率 &le; 0.35%</b>：管理费+托管费极低，长期定投省出大量收益。<br>
 • <span class="badge-fee-mid">常规</span> <b>综合年费率 0.35% ~ 0.85%</b>：主流公募指数基金常规费率。<br>
 • <span class="badge-fee-high">偏高</span> <b>综合年费率 &gt; 0.85%</b>：通常为 C 类（含销售服务费）或老一代高费率 QDII。<br>
-<hr style="margin:6px 0; border:none; border-top:1px dashed #e5e5ea;">
+<hr style="margin:8px 0; border:none; border-top:1px dashed #e5e5ea;">
 <b>🎯 场外避坑与实操秘籍：</b><br>
 • <b>A类 vs C类怎么选？</b> 长期定投持有（&gt; 1年）<b>必选 A 类</b>（无年化销售服务费，长期省大钱）；短期波段（&lt; 1年）选 <b>C 类</b>（免申购费更灵活）。<br>
 • <b>美元现汇大水管：</b> 若手头有美元现汇，可直接在平台搜索对应基金的<b>【美元现汇份额】</b>，通常不占换汇额度，限额极其充裕！<br>
@@ -727,7 +754,7 @@ with tab2:
     cards_html_list = []
     for _, row in display_df.iterrows():
         note_html = (
-            f'<div style="margin-top:6px; background:#fff9f0; border-left:3px solid #ff9500; border-radius:4px; padding:4px 8px; color:#c45100; font-size:11px; font-weight:500;">{row["channel_note"]}</div>'
+            f'<div style="margin-top:8px; background:#fffbeb; border-left:3px solid #f59e0b; border-radius:4px; padding:6px 10px; color:#b45309; font-size:13px; font-weight:500;">{row["channel_note"]}</div>'
             if row["channel_note"] else ""
         )
 
@@ -763,7 +790,7 @@ with tab2:
             f'</div>'
             f'<div class="card-meta-row">'
             f'<span>🎯 标的: <b>{row["index"]}</b></span>'
-            f'<span>💰 单日限额: <b style="color:#2e7d32; font-size:13px;">{row["单日限额"]}</b><span style="color:#2e7d32; font-size:11px; font-weight:600;">{dca_card_text}</span></span>'
+            f'<span>💰 单日限额: <b style="color:#15803d; font-size:14px;">{row["单日限额"]}</b><span style="color:#15803d; font-size:13px; font-weight:600;">{dca_card_text}</span></span>'
             f'</div>'
             f'<div class="card-metrics-row">'
             f'{ms_card_tag}'
@@ -778,7 +805,7 @@ with tab2:
     mobile_container_html = f'<div class="mobile-cards-view">{"".join(cards_html_list)}</div>'
     st.markdown(mobile_container_html, unsafe_allow_html=True)
 
-    # 2. 电脑端数据表格 (纯正苹果风设计：支持任意列自动换行、小字号、无横向滚动条)
+    # 2. 电脑端数据表格 (专业现代设计：字号清晰、对比度高、零横向滚动条)
     table_rows = []
     for _, row in display_df.iterrows():
         channel_content = (
@@ -801,7 +828,7 @@ with tab2:
             ms_cell_html = f'<span class="badge-ms-gray" title="{tooltip}">次新标的</span>'
         else:
             badge_cls = "badge-ms-green" if badge_type == "green" else ("badge-ms-orange" if badge_type == "orange" else ("badge-ms-red" if badge_type == "red" else "badge-ms-gray"))
-            ms_cell_html = f'<div title="{tooltip}" style="display:inline-flex; align-items:center; gap:4px; cursor:help;"><span>{diff}</span><span class="{badge_cls}">{eval_label}</span></div>'
+            ms_cell_html = f'<div title="{tooltip}" style="display:inline-flex; align-items:center; gap:5px; cursor:help;"><span>{diff}</span><span class="{badge_cls}">{eval_label}</span></div>'
 
         total_fee = row.get("total_fee", "--")
         mgmt_fee = row.get("mgmt_fee", "--")
@@ -815,9 +842,9 @@ with tab2:
         else:
             badge_cls = "badge-fee-low" if fee_badge == "low" else ("badge-fee-high" if fee_badge == "high" else "badge-fee-mid")
             badge_lbl = "极省" if fee_badge == "low" else ("偏高" if fee_badge == "high" else "常规")
-            fee_cell_html = f'<div title="{fee_tooltip}" style="display:inline-flex; align-items:center; gap:4px; cursor:help;"><span>{total_fee}</span><span class="{badge_cls}">{badge_lbl}</span></div>'
+            fee_cell_html = f'<div title="{fee_tooltip}" style="display:inline-flex; align-items:center; gap:5px; cursor:help;"><span>{total_fee}</span><span class="{badge_cls}">{badge_lbl}</span></div>'
 
-        dca_badge = '<div style="font-size:11px; color:#2e7d32; font-weight:500; margin-top:2px;">● 支持定投</div>' if row.get("can_dca") else '<div style="font-size:11px; color:#8e8e93; margin-top:2px;">暂停定投</div>'
+        dca_badge = '<div style="font-size:12px; color:#15803d; font-weight:600; margin-top:3px;">● 支持定投</div>' if row.get("can_dca") else '<div style="font-size:12px; color:#71717a; margin-top:3px;">暂停定投</div>'
 
         tr = (
             f'<tr>'
