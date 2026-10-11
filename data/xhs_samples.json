@@ -1,0 +1,65 @@
+{
+  "updated_at": "2026-10-11 14:22:20",
+  "samples": [
+    {
+      "id": "xhs_ndx_01",
+      "name": "纳指实测老基民 (小红书纳指专精)",
+      "platform": "xiaohongshu",
+      "focus": "纳斯达克100 / 纳斯达克科技",
+      "post_schedule": "工作日 09:10-09:25",
+      "weight": 1.0,
+      "stats": {
+        "total_checks": 2,
+        "matched_count": 14,
+        "accuracy": 1.0,
+        "last_check": "2026-10-11 14:22:20"
+      },
+      "features": "实测党，重点测试万家App、南方App、广发、景顺早盘放水情况"
+    },
+    {
+      "id": "xhs_sp500_01",
+      "name": "标普500每日雷达 (小红书标普专精)",
+      "platform": "xiaohongshu",
+      "focus": "标普500被动指数",
+      "post_schedule": "工作日 09:15-09:30",
+      "weight": 1.0,
+      "stats": {
+        "total_checks": 2,
+        "matched_count": 14,
+        "accuracy": 1.0,
+        "last_check": "2026-10-11 14:22:20"
+      },
+      "features": "关注摩根、易方达、博时、天弘标普500场外大额申购"
+    },
+    {
+      "id": "xhs_macro_01",
+      "name": "QDII限购日报全景 (小红书综合大V)",
+      "platform": "xiaohongshu",
+      "focus": "美股+全球被动QDII全景",
+      "post_schedule": "工作日 13:00 / 18:00",
+      "weight": 0.8,
+      "stats": {
+        "total_checks": 2,
+        "matched_count": 14,
+        "accuracy": 1.0,
+        "last_check": "2026-10-11 14:22:20"
+      },
+      "features": "汇总长图表格，标的全面，但偶有前一天残留滞后"
+    },
+    {
+      "id": "feixia_mirror_01",
+      "name": "飞侠FEIXIA (第三方代销镜像对照组)",
+      "platform": "feixia.org",
+      "focus": "全市场QDII三方代销",
+      "post_schedule": "全天准实时",
+      "weight": 0.5,
+      "stats": {
+        "total_checks": 2,
+        "matched_count": 14,
+        "accuracy": 1.0,
+        "last_check": "2026-10-11 14:22:20"
+      },
+      "features": "仅同步天天/同花顺三方代销额度，无官方直销放水数据，用于代销基线核验"
+    }
+  ]
+}
