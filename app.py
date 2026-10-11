@@ -27,17 +27,19 @@ st.markdown("""
         color: #1d1d1f;
     }
     
-    /* 容器边距柔和微调 */
+    /* 容器边距柔和微调 (舒适全景视野，充分利用屏幕宽度) */
     .block-container {
-        padding-top: 4.8rem !important;
+        padding-top: 4.6rem !important;
         padding-bottom: 2.5rem !important;
-        max-width: 1200px !important;
+        max-width: 1440px !important;
+        width: 95% !important;
     }
     @media screen and (max-width: 768px) {
         .block-container {
             padding-top: 4rem !important;
             padding-left: 0.9rem !important;
             padding-right: 0.9rem !important;
+            width: 100% !important;
         }
     }
 
@@ -53,42 +55,8 @@ st.markdown("""
         text-align: center;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
-    .apple-nav-bar {
-        height: 42px;
-        background: #fbfbfd;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 20px;
-        font-size: 13px;
-        color: #6e6e73;
-        padding: 0 16px;
-        overflow-x: auto;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
-    }
-    .apple-nav-bar::-webkit-scrollbar {
-        display: none;
-    }
-    .apple-nav-logo {
-        font-size: 15px;
-        color: #1d1d1f;
-        line-height: 1;
-        margin-right: 2px;
-    }
-    .apple-nav-link {
-        color: #6e6e73;
-        font-weight: 500;
-        transition: color 0.15s ease;
-        letter-spacing: -0.01em;
-    }
-    .apple-nav-link.active, .apple-nav-link:hover {
-        color: #0071e3;
-        font-weight: 600;
-    }
     .apple-hero-body {
-        padding: 30px 20px 26px 20px;
+        padding: 32px 20px 28px 20px;
     }
     .apple-hero-headline {
         font-size: 38px;
@@ -599,17 +567,6 @@ ndx_can_buy = len(df[(df["index"].isin(["纳斯达克100", "纳斯达克科技"]
 can_buy_pct = int(round(can_buy_funds / total_funds * 100)) if total_funds > 0 else 0
 
 header_html = f"""<div class="apple-hero-banner">
-    <div class="apple-nav-bar">
-        <span class="apple-nav-logo"></span>
-        <span class="apple-nav-link active">额度雷达</span>
-        <span class="apple-nav-link">标普500</span>
-        <span class="apple-nav-link">纳斯达克100</span>
-        <span class="apple-nav-link">直销放水</span>
-        <span class="apple-nav-link">定投通道</span>
-        <span class="apple-nav-link">晨星对标</span>
-        <span class="apple-nav-link">费率透明</span>
-        <span class="apple-nav-link" style="opacity:0.75;">🔍</span>
-    </div>
     <div class="apple-hero-body">
         <div class="apple-hero-headline">小鸡观察基地</div>
         <div class="apple-hero-subhead">专注美股被动 QDII · 场外额度实时雷达。</div>
