@@ -550,6 +550,7 @@ with tab1:
                 amt_bg = "#fff8e1"
 
             note_badge = f'<span style="color:#e65100; font-weight:500;"> · {r["channel_note"]}</span>' if r.get('channel_note') else ''
+            dca_tag = ' · <span style="color:#2e7d32; font-weight:500;">支持定投</span>' if r.get('can_dca') else ''
 
             item = (
                 f'<div class="top-fund-item">'
@@ -559,6 +560,7 @@ with tab1:
                 f'</div>'
                 f'<div style="font-size:11px; color:#86868b; margin-top:3px;">'
                 f'<span>起购: {r.get("min_buy", "10")}元</span>'
+                f'{dca_tag}'
                 f'{note_badge}'
                 f'</div>'
                 f'</div>'
@@ -585,7 +587,7 @@ with tab1:
 with tab2:
     st.caption(f"当前显示 **{len(filtered_df)}** 只可买基金（已自动过滤暂停申购标的，可在左侧切换）")
 
-    with st.expander("💡 什么是「近1年相对基准」与「综合年费率」？怎么看？", expanded=False):
+    with st.expander("💡 什么是「相对基准」「综合年费率」与 A/C 选基秘籍？", expanded=False):
         st.markdown("""<div style="font-size:12px; line-height:1.6; color:#48484a; padding:4px 0;">
 <b>核心指标解读：</b><br>
 • <span class="badge-ms-green">极佳 / 跑赢</span> <b>相对基准跑输 &lt; 1.0% 或跑赢</b>：复制精度极高，超额摩擦损耗极小，属于<b>首选优质标的</b>。<br>
@@ -593,7 +595,12 @@ with tab2:
 • <span class="badge-ms-red">偏大</span> <b>跑输 &gt; 2.0%</b>：跟踪磨损较大，长期持有易被吃掉收益，需谨慎。<br>
 • <span class="badge-fee-low">极省</span> <b>综合年费率 &le; 0.35%</b>：管理费+托管费极低，长期定投省出大量收益。<br>
 • <span class="badge-fee-mid">常规</span> <b>综合年费率 0.35% ~ 0.85%</b>：主流公募指数基金常规费率。<br>
-• <span class="badge-fee-high">偏高</span> <b>综合年费率 &gt; 0.85%</b>：通常为 C 类（含销售服务费）或老一代高费率 QDII。
+• <span class="badge-fee-high">偏高</span> <b>综合年费率 &gt; 0.85%</b>：通常为 C 类（含销售服务费）或老一代高费率 QDII。<br>
+<hr style="margin:6px 0; border:none; border-top:1px dashed #e5e5ea;">
+<b>🎯 场外避坑与实操秘籍：</b><br>
+• <b>A类 vs C类怎么选？</b> 长期定投持有（&gt; 1年）<b>必选 A 类</b>（无年化销售服务费，长期省大钱）；短期波段（&lt; 1年）选 <b>C 类</b>（免申购费更灵活）。<br>
+• <b>美元现汇大水管：</b> 若手头有美元现汇，可直接在平台搜索对应基金的<b>【美元现汇份额】</b>，通常不占换汇额度，限额极其充裕！<br>
+• <b>定投偷渡通道：</b> 若部分基金单笔限额较小，可直接在交易 App 中设置<b>【每日定期定额】</b>，每天自动稳定积攒额度。
 </div>""", unsafe_allow_html=True)
 
     # 格式化展示数据
@@ -654,6 +661,8 @@ with tab2:
         else:
             fee_card_tag = f'<span class="metric-tag tag-gray">💸 年费 <b>{total_fee}</b></span>'
 
+        dca_card_text = " · 支持定投" if row.get("can_dca") else ""
+
         card = (
             f'<div class="apple-fund-card">'
             f'<div class="card-header">'
@@ -661,7 +670,7 @@ with tab2:
             f'</div>'
             f'<div class="card-meta-row">'
             f'<span>🎯 标的: <b>{row["index"]}</b></span>'
-            f'<span>💰 单日限额: <b style="color:#2e7d32; font-size:13px;">{row["单日限额"]}</b></span>'
+            f'<span>💰 单日限额: <b style="color:#2e7d32; font-size:13px;">{row["单日限额"]}</b><span style="color:#2e7d32; font-size:11px; font-weight:600;">{dca_card_text}</span></span>'
             f'</div>'
             f'<div class="card-metrics-row">'
             f'{ms_card_tag}'
@@ -715,12 +724,14 @@ with tab2:
             badge_lbl = "极省" if fee_badge == "low" else ("偏高" if fee_badge == "high" else "常规")
             fee_cell_html = f'<div title="{fee_tooltip}" style="display:inline-flex; align-items:center; gap:4px; cursor:help;"><span>{total_fee}</span><span class="{badge_cls}">{badge_lbl}</span></div>'
 
+        dca_badge = '<div style="font-size:11px; color:#2e7d32; font-weight:500; margin-top:2px;">● 支持定投</div>' if row.get("can_dca") else '<div style="font-size:11px; color:#8e8e93; margin-top:2px;">暂停定投</div>'
+
         tr = (
             f'<tr>'
             f'<td class="col-code">{row["code"]}</td>'
             f'<td class="col-name">{row["name"]}</td>'
             f'<td class="col-index">{row["index"]}</td>'
-            f'<td class="col-limit">{row["单日限额"]}</td>'
+            f'<td class="col-limit"><div>{row["单日限额"]}</div>{dca_badge}</td>'
             f'<td class="col-error">{ms_cell_html}</td>'
             f'<td class="col-return">{row["近1年收益"]}</td>'
             f'<td class="col-fee">{fee_cell_html}</td>'
