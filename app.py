@@ -13,18 +13,286 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 自定义苹果风格响应式 CSS 样式
+# 自定义苹果风格自适应响应式 CSS 样式 (支持跟随访问设备自动切换夜间/深色模式)
 st.markdown("""
 <style>
-    /* 全局统一极简纯白底色，彻底消灭上下色差断层 */
+    /* ========================================================
+       色彩设计系统 (Design Tokens) - 苹果极简主义双模式规范
+       ======================================================== */
+    :root {
+        color-scheme: light dark;
+
+        /* 日间浅色模式 (Apple Light Mode) */
+        --bg-page: #ffffff;
+        --bg-header: #ffffff;
+        --bg-sidebar: #f8fafc;
+        --bg-card: #ffffff;
+        --bg-card-subtle: #fbfbfd;
+        --bg-table-wrapper: #ffffff;
+        --bg-table-th: #f1f5f9;
+        --bg-table-even: #f8fafc;
+        --bg-table-hover: #e2e8f0;
+        
+        --text-primary: #1d1d1f;
+        --text-secondary: #515154;
+        --text-muted: #6e6e73;
+        --text-table: #1e293b;
+        --text-table-th: #334155;
+        
+        --border-card: rgba(0, 0, 0, 0.08);
+        --border-table-outer: #cbd5e1;
+        --border-table-row: #e2e8f0;
+        --border-table-col: #f1f5f9;
+        --border-table-th: #94a3b8;
+        
+        --btn-sec-bg: #f0f0f5;
+        --btn-sec-text: #1d1d1f;
+        --btn-sec-border: rgba(0, 0, 0, 0.08);
+        
+        --shadow-hero: 0 4px 20px rgba(0, 0, 0, 0.03);
+        --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.02);
+        --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.05);
+        
+        --color-code: #0284c7;
+        --color-green: #15803d;
+        --color-red: #dc2626;
+        --color-orange: #a16207;
+
+        /* 状态与指标标签 (Light) */
+        --badge-green-bg: #f0fdf4;
+        --badge-green-text: #15803d;
+        --badge-green-border: #bbf7d0;
+
+        --badge-orange-bg: #fefce8;
+        --badge-orange-text: #a16207;
+        --badge-orange-border: #fef08a;
+
+        --badge-red-bg: #fef2f2;
+        --badge-red-text: #b91c1c;
+        --badge-red-border: #fecaca;
+
+        --badge-gray-bg: #f1f5f9;
+        --badge-gray-text: #64748b;
+        --badge-gray-border: #cbd5e1;
+
+        --badge-channel-bg: #fffbeb;
+        --badge-channel-text: #92400e;
+        --badge-channel-border: #fde68a;
+
+        --badge-blue-bg: #eff6ff;
+        --badge-blue-text: #1d4ed8;
+        --badge-blue-border: #dbeafe;
+    }
+
+    /* 访问设备系统夜间/暗黑模式自适应 (Apple Dark Mode) */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg-page: #0f1012;
+            --bg-header: #0f1012;
+            --bg-sidebar: #16171b;
+            --bg-card: #1c1d22;
+            --bg-card-subtle: #212228;
+            --bg-table-wrapper: #1c1d22;
+            --bg-table-th: #262831;
+            --bg-table-even: #18191e;
+            --bg-table-hover: #2c2f3a;
+            
+            --text-primary: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --text-muted: #86868b;
+            --text-table: #e2e8f0;
+            --text-table-th: #cbd5e1;
+            
+            --border-card: rgba(255, 255, 255, 0.1);
+            --border-table-outer: #383b46;
+            --border-table-row: #292b34;
+            --border-table-col: #21232b;
+            --border-table-th: #4b4f5e;
+            
+            --btn-sec-bg: #2c2e35;
+            --btn-sec-text: #f5f5f7;
+            --btn-sec-border: rgba(255, 255, 255, 0.12);
+            
+            --shadow-hero: 0 4px 24px rgba(0, 0, 0, 0.45);
+            --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.35);
+            --shadow-card-hover: 0 6px 16px rgba(0, 0, 0, 0.55);
+            
+            --color-code: #38bdf8;
+            --color-green: #4ade80;
+            --color-red: #f87171;
+            --color-orange: #fbbf24;
+
+            /* 状态与指标标签 (Dark 高对比度舒适色) */
+            --badge-green-bg: rgba(34, 197, 94, 0.15);
+            --badge-green-text: #4ade80;
+            --badge-green-border: rgba(74, 222, 128, 0.3);
+
+            --badge-orange-bg: rgba(234, 179, 8, 0.15);
+            --badge-orange-text: #facc15;
+            --badge-orange-border: rgba(250, 204, 21, 0.3);
+
+            --badge-red-bg: rgba(239, 68, 68, 0.15);
+            --badge-red-text: #f87171;
+            --badge-red-border: rgba(248, 113, 113, 0.3);
+
+            --badge-gray-bg: rgba(148, 163, 184, 0.14);
+            --badge-gray-text: #cbd5e1;
+            --badge-gray-border: rgba(148, 163, 184, 0.25);
+
+            --badge-channel-bg: rgba(245, 158, 11, 0.15);
+            --badge-channel-text: #fbbf24;
+            --badge-channel-border: rgba(251, 191, 36, 0.3);
+
+            --badge-blue-bg: rgba(59, 130, 246, 0.15);
+            --badge-blue-text: #60a5fa;
+            --badge-blue-border: rgba(96, 165, 250, 0.3);
+        }
+
+        /* Streamlit 自身组件暗黑适配 */
+        [data-testid="stSidebar"], section[data-testid="stSidebar"] {
+            background-color: var(--bg-sidebar) !important;
+            border-right: 1px solid var(--border-card) !important;
+        }
+        [data-testid="stSidebar"] * {
+            color: var(--text-primary);
+        }
+        [data-testid="stSidebar"] .stCaption,
+        [data-testid="stSidebar"] .stMarkdown p {
+            color: var(--text-secondary) !important;
+        }
+        [data-testid="stSidebar"] input,
+        [data-testid="stSidebar"] select,
+        [data-testid="stSidebar"] div[data-baseweb="select"] {
+            background-color: #212228 !important;
+            color: var(--text-primary) !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+        button[data-baseweb="tab"] {
+            color: var(--text-secondary) !important;
+        }
+        button[data-baseweb="tab"][aria-selected="true"] {
+            color: #38bdf8 !important;
+            border-bottom-color: #38bdf8 !important;
+        }
+        div[data-testid="stTabs"] {
+            border-bottom-color: var(--border-card) !important;
+        }
+        div[data-testid="stExpander"] {
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--border-card) !important;
+            border-radius: 12px !important;
+        }
+        div[data-testid="stExpander"] details summary span {
+            color: var(--text-primary) !important;
+        }
+        .stCaption, [data-testid="stCaptionContainer"] {
+            color: var(--text-secondary) !important;
+        }
+        div[data-testid="stDataFrame"] {
+            border: 1px solid var(--border-card) !important;
+            border-radius: 12px !important;
+        }
+
+        /* 强力直达覆盖：移动端/WebView即便变量解析有偶发延迟也100%瞬间变暗 */
+        .stApp {
+            background-color: #0f1012 !important;
+        }
+        header[data-testid="stHeader"],
+        .stAppHeader,
+        header {
+            background-color: #0f1012 !important;
+            background: #0f1012 !important;
+        }
+        .apple-hero-banner {
+            background: #212228 !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #f5f5f7 !important;
+        }
+        .apple-hero-headline {
+            color: #f5f5f7 !important;
+        }
+        .apple-hero-subhead {
+            color: #a1a1a6 !important;
+        }
+        .apple-btn-secondary {
+            background: #2c2e35 !important;
+            color: #f5f5f7 !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+        }
+        .apple-stat-card {
+            background: #1c1d22 !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        .stat-value {
+            color: #f5f5f7 !important;
+        }
+        .stat-sub {
+            color: #a1a1a6 !important;
+        }
+        .top-fund-item {
+            background: #1c1d22 !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        .top-fund-title {
+            color: #f5f5f7 !important;
+        }
+        .top-fund-sub {
+            color: #86868b !important;
+        }
+        .apple-fund-card {
+            background: #1c1d22 !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        .fund-name {
+            color: #f5f5f7 !important;
+        }
+        .card-meta-row {
+            color: #a1a1a6 !important;
+        }
+        .desktop-table-view {
+            background: #1c1d22 !important;
+            border-color: #383b46 !important;
+        }
+        .apple-desktop-table th {
+            background-color: #262831 !important;
+            color: #cbd5e1 !important;
+            border-bottom-color: #4b4f5e !important;
+            border-right-color: #292b34 !important;
+        }
+        .apple-desktop-table td {
+            color: #e2e8f0 !important;
+            border-bottom-color: #292b34 !important;
+            border-right-color: #21232b !important;
+        }
+        .apple-desktop-table tr:nth-child(even) td {
+            background-color: #18191e !important;
+        }
+        .apple-desktop-table tr:hover td {
+            background-color: #2c2f3a !important;
+        }
+        .col-name {
+            color: #f5f5f7 !important;
+        }
+        .col-index {
+            color: #a1a1a6 !important;
+        }
+        .section-title {
+            color: #f5f5f7 !important;
+        }
+        .expander-guide-content {
+            color: #a1a1a6 !important;
+        }
+    }
+
+    /* 全局统一底色与字体 */
     .stApp {
-        background-color: #ffffff !important;
+        background-color: var(--bg-page) !important;
     }
     header[data-testid="stHeader"],
     .stAppHeader,
     header {
-        background-color: #ffffff !important;
-        background: #ffffff !important;
+        background-color: var(--bg-header) !important;
+        background: var(--bg-header) !important;
     }
     [data-testid="stDecoration"] {
         display: none !important;
@@ -33,10 +301,10 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif !important;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        color: #1d1d1f;
+        color: var(--text-primary);
     }
     
-    /* 容器边距柔和微调 (舒适全景视野，充分利用屏幕宽度) */
+    /* 容器边距柔和微调 */
     .block-container {
         padding-top: 4.6rem !important;
         padding-bottom: 2.5rem !important;
@@ -52,17 +320,17 @@ st.markdown("""
         }
     }
 
-    /* 苹果官网旗舰级浅色 Hero 舞台 (Apple Light Dashboard) */
+    /* 苹果官网旗舰级 Hero 舞台 */
     .apple-hero-banner {
-        background: #fbfbfd;
-        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--bg-card-subtle);
+        border: 1px solid var(--border-card);
         border-radius: 18px;
         margin-top: 2px;
         margin-bottom: 16px;
         overflow: hidden;
-        color: #1d1d1f;
+        color: var(--text-primary);
         text-align: center;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        box-shadow: var(--shadow-hero);
     }
     .apple-hero-body {
         padding: 32px 20px 28px 20px;
@@ -70,7 +338,7 @@ st.markdown("""
     .apple-hero-headline {
         font-size: 38px;
         font-weight: 700;
-        color: #1d1d1f;
+        color: var(--text-primary);
         letter-spacing: -0.025em;
         line-height: 1.2;
         margin: 0 0 10px 0;
@@ -87,7 +355,7 @@ st.markdown("""
     .apple-hero-subhead {
         font-size: 17px;
         font-weight: 400;
-        color: #515154;
+        color: var(--text-secondary);
         letter-spacing: -0.01em;
         line-height: 1.4;
         margin: 0 0 20px 0;
@@ -119,9 +387,9 @@ st.markdown("""
         box-shadow: 0 2px 10px rgba(0, 113, 227, 0.25);
     }
     .apple-btn-secondary {
-        background: #f0f0f5;
-        color: #1d1d1f !important;
-        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--btn-sec-bg);
+        color: var(--btn-sec-text) !important;
+        border: 1px solid var(--btn-sec-border);
         font-size: 14px;
         font-weight: 500;
         padding: 8px 20px;
@@ -132,7 +400,7 @@ st.markdown("""
         letter-spacing: -0.01em;
     }
 
-    /* 苹果小组件风格统计卡片 (高对比度、清晰字号) */
+    /* 苹果小组件风格统计卡片 */
     .apple-stats-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -145,11 +413,11 @@ st.markdown("""
         }
     }
     .apple-stat-card {
-        background: #ffffff;
-        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--bg-card);
+        border: 1px solid var(--border-card);
         border-radius: 14px;
         padding: 14px 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        box-shadow: var(--shadow-card);
     }
     @media screen and (max-width: 768px) {
         .apple-stat-card {
@@ -158,7 +426,7 @@ st.markdown("""
     }
     .stat-label {
         font-size: 13px;
-        color: #6e6e73;
+        color: var(--text-muted);
         font-weight: 500;
         margin-bottom: 4px;
         white-space: nowrap;
@@ -171,7 +439,7 @@ st.markdown("""
     .stat-value {
         font-size: 26px;
         font-weight: 700;
-        color: #1d1d1f;
+        color: var(--text-primary);
         line-height: 1.2;
         letter-spacing: -0.02em;
     }
@@ -183,12 +451,12 @@ st.markdown("""
     .stat-unit {
         font-size: 13px;
         font-weight: 500;
-        color: #86868b;
+        color: var(--text-muted);
         margin-left: 2px;
     }
     .stat-sub {
         font-size: 13px;
-        color: #6e6e73;
+        color: var(--text-secondary);
         margin-top: 4px;
         white-space: nowrap;
         overflow: hidden;
@@ -200,31 +468,105 @@ st.markdown("""
         }
     }
     .text-green {
-        color: #15803d;
+        color: var(--color-green);
+    }
+
+    /* 分组与板块标题 */
+    .section-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 4px 0 8px 0;
     }
 
     /* TOP 榜单项卡片 */
     .top-fund-item {
-        background: #ffffff;
-        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--bg-card);
+        border: 1px solid var(--border-card);
         border-radius: 12px;
         padding: 12px 16px;
         margin-bottom: 10px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        box-shadow: var(--shadow-card);
         transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
     .top-fund-item:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--shadow-card-hover);
+    }
+    .top-fund-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .top-fund-code {
+        color: var(--color-code);
+        font-family: -apple-system-monospaced, "SF Pro Text", Consolas, monospace;
+        margin-right: 4px;
+    }
+    .top-fund-sub {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .badge-limit-unlimited {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--badge-green-text);
+        background: var(--badge-green-bg);
+        border: 1px solid var(--badge-green-border);
+        padding: 3px 9px;
+        border-radius: 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .badge-limit-warning {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--badge-orange-text);
+        background: var(--badge-orange-bg);
+        border: 1px solid var(--badge-orange-border);
+        padding: 3px 9px;
+        border-radius: 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .badge-channel-note {
+        color: var(--badge-channel-text);
+        font-weight: 500;
+        background: var(--badge-channel-bg);
+        padding: 2px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--badge-channel-border);
+    }
+    .tag-dca-active {
+        color: var(--color-green);
+        font-weight: 600;
     }
 
-    /* 移动端卡片流苹果风 (字号舒适、行间透气) */
+    /* 说明面板样式 */
+    .expander-guide-content {
+        font-size: 13.5px;
+        line-height: 1.65;
+        color: var(--text-secondary);
+        padding: 4px 0;
+    }
+    .guide-divider {
+        margin: 8px 0;
+        border: none;
+        border-top: 1px dashed var(--border-card);
+    }
+
+    /* 移动端卡片流 */
     .apple-fund-card {
-        background: #ffffff;
-        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--bg-card);
+        border: 1px solid var(--border-card);
         border-radius: 14px;
         padding: 14px 16px;
         margin-bottom: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        box-shadow: var(--shadow-card);
     }
     .card-header {
         display: flex;
@@ -236,21 +578,21 @@ st.markdown("""
     .fund-name {
         font-size: 15px;
         font-weight: 600;
-        color: #1d1d1f;
+        color: var(--text-primary);
         line-height: 1.4;
         word-break: break-all;
     }
     .fund-code {
-        color: #0066cc;
+        color: var(--color-code);
         font-weight: 600;
         margin-right: 4px;
-        font-family: -apple-system-monospaced, "SF Pro Text", monospace;
+        font-family: -apple-system-monospaced, "SF Pro Text", Consolas, monospace;
     }
     .card-meta-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        color: #48484a;
+        color: var(--text-secondary);
         font-size: 14px;
         margin-bottom: 8px;
     }
@@ -260,6 +602,42 @@ st.markdown("""
         flex-wrap: wrap;
         margin-bottom: 8px;
     }
+    .card-channel-note {
+        margin-top: 8px;
+        background: var(--badge-channel-bg);
+        border-left: 3px solid #f59e0b;
+        border-radius: 4px;
+        padding: 6px 10px;
+        color: var(--badge-channel-text);
+        font-size: 13px;
+        font-weight: 500;
+    }
+    .limit-val-highlight {
+        color: var(--color-green);
+        font-size: 14px;
+    }
+    .dca-val-highlight {
+        color: var(--color-green);
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .dca-status-yes {
+        font-size: 12px;
+        color: var(--color-green);
+        font-weight: 600;
+        margin-top: 3px;
+    }
+    .dca-status-no {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 3px;
+    }
+    .text-empty {
+        color: var(--text-muted);
+        opacity: 0.6;
+    }
+
+    /* 标签与徽章 */
     .metric-tag {
         font-size: 12px;
         padding: 3px 8px;
@@ -270,40 +648,40 @@ st.markdown("""
         font-weight: 500;
     }
     .tag-blue {
-        background: #eff6ff;
-        color: #1d4ed8;
-        border: 1px solid #dbeafe;
+        background: var(--badge-blue-bg);
+        color: var(--badge-blue-text);
+        border: 1px solid var(--badge-blue-border);
     }
     .tag-green {
-        background: #f0fdf4;
-        color: #15803d;
-        border: 1px solid #dcfce7;
+        background: var(--badge-green-bg);
+        color: var(--badge-green-text);
+        border: 1px solid var(--badge-green-border);
     }
     .tag-orange {
-        background: #fefce8;
-        color: #a16207;
-        border: 1px solid #fef9c3;
+        background: var(--badge-orange-bg);
+        color: var(--badge-orange-text);
+        border: 1px solid var(--badge-orange-border);
     }
     .tag-red {
-        background: #fef2f2;
-        color: #b91c1c;
-        border: 1px solid #fee2e2;
+        background: var(--badge-red-bg);
+        color: var(--badge-red-text);
+        border: 1px solid var(--badge-red-border);
     }
     .tag-gray {
-        background: #f4f4f5;
-        color: #52525b;
-        border: 1px solid #e4e4e7;
+        background: var(--badge-gray-bg);
+        color: var(--badge-gray-text);
+        border: 1px solid var(--badge-gray-border);
     }
 
-    /* 业界高标准金融数据卡片式表格 (Fintech Data Table) */
+    /* 桌面端高标准金融数据表格 */
     .desktop-table-view {
         display: block !important;
         margin-top: 14px;
         margin-bottom: 24px;
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
+        background: var(--bg-table-wrapper);
+        border: 1px solid var(--border-table-outer);
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        box-shadow: var(--shadow-card);
         overflow-x: auto;
     }
     .apple-desktop-table {
@@ -313,13 +691,13 @@ st.markdown("""
         text-align: left;
     }
     .apple-desktop-table th {
-        background-color: #f1f5f9;
-        color: #334155;
+        background-color: var(--bg-table-th);
+        color: var(--text-table-th);
         font-weight: 600;
         text-align: left;
         padding: 13px 14px;
-        border-bottom: 2px solid #94a3b8;
-        border-right: 1px solid #e2e8f0;
+        border-bottom: 2px solid var(--border-table-th);
+        border-right: 1px solid var(--border-table-row);
         white-space: nowrap;
         font-size: 13px;
         letter-spacing: -0.01em;
@@ -329,9 +707,9 @@ st.markdown("""
     }
     .apple-desktop-table td {
         padding: 13px 14px;
-        border-bottom: 1px solid #e2e8f0;
-        border-right: 1px solid #f1f5f9;
-        color: #1e293b;
+        border-bottom: 1px solid var(--border-table-row);
+        border-right: 1px solid var(--border-table-col);
+        color: var(--text-table);
         vertical-align: middle;
         line-height: 1.5;
         font-size: 14px;
@@ -340,17 +718,17 @@ st.markdown("""
         border-right: none;
     }
     .apple-desktop-table tr:nth-child(even) td {
-        background-color: #f8fafc;
+        background-color: var(--bg-table-even);
     }
     .apple-desktop-table tr:hover td {
-        background-color: #e2e8f0 !important;
+        background-color: var(--bg-table-hover) !important;
     }
     .apple-desktop-table tr:last-child td {
         border-bottom: none;
     }
     .col-code {
         font-family: -apple-system-monospaced, "SF Pro Text", Consolas, monospace;
-        color: #0284c7;
+        color: var(--color-code);
         font-weight: 700;
         font-size: 14px;
         white-space: nowrap;
@@ -358,7 +736,7 @@ st.markdown("""
     .col-name {
         font-weight: 600;
         font-size: 14px;
-        color: #0f172a;
+        color: var(--text-primary);
         white-space: normal;
         word-break: break-all;
         line-height: 1.4;
@@ -366,14 +744,14 @@ st.markdown("""
     .col-index {
         white-space: nowrap;
         font-size: 14px;
-        color: #475569;
+        color: var(--text-secondary);
         font-weight: 500;
     }
     .col-limit {
         white-space: nowrap;
         font-weight: 700;
         font-size: 14px;
-        color: #15803d;
+        color: var(--color-green);
     }
     .col-error {
         white-space: nowrap;
@@ -381,43 +759,43 @@ st.markdown("""
         font-size: 14px;
     }
     .badge-ms-green {
-        background: #f0fdf4;
-        color: #15803d;
-        border: 1px solid #bbf7d0;
+        background: var(--badge-green-bg);
+        color: var(--badge-green-text);
+        border: 1px solid var(--badge-green-border);
         padding: 2px 8px;
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
     }
     .badge-ms-orange {
-        background: #fefce8;
-        color: #a16207;
-        border: 1px solid #fef08a;
+        background: var(--badge-orange-bg);
+        color: var(--badge-orange-text);
+        border: 1px solid var(--badge-orange-border);
         padding: 2px 8px;
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
     }
     .badge-ms-red {
-        background: #fef2f2;
-        color: #b91c1c;
-        border: 1px solid #fecaca;
+        background: var(--badge-red-bg);
+        color: var(--badge-red-text);
+        border: 1px solid var(--badge-red-border);
         padding: 2px 8px;
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
     }
     .badge-ms-gray {
-        background: #f1f5f9;
-        color: #64748b;
-        border: 1px solid #cbd5e1;
+        background: var(--badge-gray-bg);
+        color: var(--badge-gray-text);
+        border: 1px solid var(--badge-gray-border);
         padding: 2px 8px;
         border-radius: 6px;
         font-size: 12px;
     }
     .col-return {
         white-space: nowrap;
-        color: #dc2626;
+        color: var(--color-red);
         font-weight: 700;
         font-size: 14px;
     }
@@ -425,29 +803,29 @@ st.markdown("""
         white-space: nowrap;
         font-weight: 500;
         font-size: 14px;
-        color: #1e293b;
+        color: var(--text-table);
     }
     .badge-fee-low {
-        background: #f0fdf4;
-        color: #15803d;
-        border: 1px solid #bbf7d0;
+        background: var(--badge-green-bg);
+        color: var(--badge-green-text);
+        border: 1px solid var(--badge-green-border);
         padding: 2px 8px;
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
     }
     .badge-fee-mid {
-        background: #f1f5f9;
-        color: #475569;
-        border: 1px solid #cbd5e1;
+        background: var(--badge-gray-bg);
+        color: var(--badge-gray-text);
+        border: 1px solid var(--badge-gray-border);
         padding: 2px 8px;
         border-radius: 6px;
         font-size: 12px;
     }
     .badge-fee-high {
-        background: #fff7ed;
-        color: #c2410c;
-        border: 1px solid #fed7aa;
+        background: var(--badge-orange-bg);
+        color: var(--badge-orange-text);
+        border: 1px solid var(--badge-orange-border);
         padding: 2px 8px;
         border-radius: 6px;
         font-size: 12px;
@@ -455,11 +833,11 @@ st.markdown("""
     }
     .col-channel {
         display: inline-block;
-        background: #fffbeb;
-        border: 1px solid #fde68a;
+        background: var(--badge-channel-bg);
+        border: 1px solid var(--badge-channel-border);
         border-radius: 6px;
         padding: 5px 9px;
-        color: #92400e;
+        color: var(--badge-channel-text);
         font-size: 12px;
         line-height: 1.45;
         font-weight: 500;
@@ -644,30 +1022,24 @@ with tab1:
             amt = r["limit_amount"]
             if amt >= 999999999:
                 amt_str = "不限额"
-                amt_color = "#15803d"
-                amt_bg = "#dcfce7"
-                amt_border = "#bbf7d0"
+                amt_badge_cls = "badge-limit-unlimited"
             elif amt >= 10000:
                 amt_str = f"限额 {amt/10000:.1f}万/日"
-                amt_color = "#92400e"
-                amt_bg = "#fef3c7"
-                amt_border = "#fde68a"
+                amt_badge_cls = "badge-limit-warning"
             else:
                 amt_str = f"限额 {int(amt):,}元/日"
-                amt_color = "#92400e"
-                amt_bg = "#fef3c7"
-                amt_border = "#fde68a"
+                amt_badge_cls = "badge-limit-warning"
 
-            note_badge = f'<span style="color:#b45309; font-weight:500; background:#fffbeb; padding:2px 8px; border-radius:6px; border:1px solid #fde68a;">💡 {r["channel_note"]}</span>' if r.get('channel_note') else ''
-            dca_tag = ' · <span style="color:#15803d; font-weight:600;">● 支持定投</span>' if r.get('can_dca') else ''
+            note_badge = f'<span class="badge-channel-note">💡 {r["channel_note"]}</span>' if r.get('channel_note') else ''
+            dca_tag = ' · <span class="tag-dca-active">● 支持定投</span>' if r.get('can_dca') else ''
 
             item = (
                 f'<div class="top-fund-item">'
                 f'<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">'
-                f'<span style="font-size:15px; font-weight:600; color:#1d1d1f;"><span style="color:#0066cc; font-family:monospace; margin-right:4px;">{r["code"]}</span> {r["name"]}</span>'
-                f'<span style="font-size:13px; font-weight:600; color:{amt_color}; background:{amt_bg}; border:1px solid {amt_border}; padding:3px 9px; border-radius:8px; white-space:nowrap; flex-shrink:0;">{amt_str}</span>'
+                f'<span class="top-fund-title"><span class="top-fund-code">{r["code"]}</span> {r["name"]}</span>'
+                f'<span class="{amt_badge_cls}">{amt_str}</span>'
                 f'</div>'
-                f'<div style="font-size:13px; color:#6e6e73; margin-top:6px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">'
+                f'<div class="top-fund-sub">'
                 f'<span>起购: {r.get("min_buy", "10")}元</span>'
                 f'{dca_tag}'
                 f'{note_badge}'
@@ -678,7 +1050,7 @@ with tab1:
         return "".join(items_html)
 
     with col_l:
-        st.markdown('<div style="font-size:13px; font-weight:600; color:#1d1d1f; margin:4px 0 8px 0;">🟢 标普500 可用额度最高 TOP 10</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">🟢 标普500 可用额度最高 TOP 10</div>', unsafe_allow_html=True)
         sp500_top = top_funds[top_funds["index"] == "标普500"].head(10)
         if len(sp500_top) > 0:
             st.markdown(render_top_list(sp500_top), unsafe_allow_html=True)
@@ -686,7 +1058,7 @@ with tab1:
             st.info("标普500当前暂无可申购份额")
 
     with col_r:
-        st.markdown('<div style="font-size:13px; font-weight:600; color:#1d1d1f; margin:4px 0 8px 0;">🔵 纳斯达克100 可用额度最高 TOP 10</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">🔵 纳斯达克100 可用额度最高 TOP 10</div>', unsafe_allow_html=True)
         nasdaq_top = top_funds[top_funds["index"].isin(["纳斯达克100", "纳斯达克科技"])].head(10)
         if len(nasdaq_top) > 0:
             st.markdown(render_top_list(nasdaq_top), unsafe_allow_html=True)
@@ -697,7 +1069,7 @@ with tab2:
     st.caption(f"当前显示 **{len(filtered_df)}** 只可买基金（已自动过滤暂停申购标的，可在左侧切换）")
 
     with st.expander("💡 什么是「相对基准」「综合年费率」与 A/C 选基秘籍？", expanded=False):
-        st.markdown("""<div style="font-size:13.5px; line-height:1.65; color:#374151; padding:4px 0;">
+        st.markdown("""<div class="expander-guide-content">
 <b>核心指标解读：</b><br>
 • <span class="badge-ms-green">极佳 / 跑赢</span> <b>相对基准跑输 &lt; 1.0% 或跑赢</b>：复制精度极高，超额摩擦损耗极小，属于<b>首选优质标的</b>。<br>
 • <span class="badge-ms-orange">正常</span> <b>跑输 1.0% ~ 2.0%</b>：处于正常的 QDII 外汇与运营摩擦区间。<br>
@@ -705,7 +1077,7 @@ with tab2:
 • <span class="badge-fee-low">极省</span> <b>综合年费率 &le; 0.35%</b>：管理费+托管费极低，长期定投省出大量收益。<br>
 • <span class="badge-fee-mid">常规</span> <b>综合年费率 0.35% ~ 0.85%</b>：主流公募指数基金常规费率。<br>
 • <span class="badge-fee-high">偏高</span> <b>综合年费率 &gt; 0.85%</b>：通常为 C 类（含销售服务费）或老一代高费率 QDII。<br>
-<hr style="margin:8px 0; border:none; border-top:1px dashed #e5e5ea;">
+<hr class="guide-divider">
 <b>🎯 场外避坑与实操秘籍：</b><br>
 • <b>A类 vs C类怎么选？</b> 长期定投持有（&gt; 1年）<b>必选 A 类</b>（无年化销售服务费，长期省大钱）；短期波段（&lt; 1年）选 <b>C 类</b>（免申购费更灵活）。<br>
 • <b>美元现汇大水管：</b> 若手头有美元现汇，可直接在平台搜索对应基金的<b>【美元现汇份额】</b>，通常不占换汇额度，限额极其充裕！<br>
@@ -743,7 +1115,7 @@ with tab2:
     cards_html_list = []
     for _, row in display_df.iterrows():
         note_html = (
-            f'<div style="margin-top:8px; background:#fffbeb; border-left:3px solid #f59e0b; border-radius:4px; padding:6px 10px; color:#b45309; font-size:13px; font-weight:500;">{row["channel_note"]}</div>'
+            f'<div class="card-channel-note">💡 {row["channel_note"]}</div>'
             if row["channel_note"] else ""
         )
 
@@ -779,7 +1151,7 @@ with tab2:
             f'</div>'
             f'<div class="card-meta-row">'
             f'<span>🎯 标的: <b>{row["index"]}</b></span>'
-            f'<span>💰 单日限额: <b style="color:#15803d; font-size:14px;">{row["单日限额"]}</b><span style="color:#15803d; font-size:13px; font-weight:600;">{dca_card_text}</span></span>'
+            f'<span>💰 单日限额: <b class="limit-val-highlight">{row["单日限额"]}</b><span class="dca-val-highlight">{dca_card_text}</span></span>'
             f'</div>'
             f'<div class="card-metrics-row">'
             f'{ms_card_tag}'
@@ -799,7 +1171,7 @@ with tab2:
     for _, row in display_df.iterrows():
         channel_content = (
             f'<div class="col-channel">💡 {row["channel_note"].replace("💡 ", "")}</div>'
-            if row["channel_note"] else '<span style="color:#c7c7cc;">--</span>'
+            if row["channel_note"] else '<span class="text-empty">--</span>'
         )
 
         diff = row.get("ms_diff", "--")
@@ -827,13 +1199,13 @@ with tab2:
         fee_tooltip = f"管理费: {mgmt_fee} | 托管费: {cust_fee} | 销售服务费: {serv_fee}"
         
         if total_fee == "--":
-            fee_cell_html = '<span style="color:#c7c7cc;">--</span>'
+            fee_cell_html = '<span class="text-empty">--</span>'
         else:
             badge_cls = "badge-fee-low" if fee_badge == "low" else ("badge-fee-high" if fee_badge == "high" else "badge-fee-mid")
             badge_lbl = "极省" if fee_badge == "low" else ("偏高" if fee_badge == "high" else "常规")
             fee_cell_html = f'<div title="{fee_tooltip}" style="display:inline-flex; align-items:center; gap:5px; cursor:help;"><span>{total_fee}</span><span class="{badge_cls}">{badge_lbl}</span></div>'
 
-        dca_badge = '<div style="font-size:12px; color:#15803d; font-weight:600; margin-top:3px;">● 支持定投</div>' if row.get("can_dca") else '<div style="font-size:12px; color:#71717a; margin-top:3px;">暂停定投</div>'
+        dca_badge = '<div class="dca-status-yes">● 支持定投</div>' if row.get("can_dca") else '<div class="dca-status-no">暂停定投</div>'
 
         tr = (
             f'<tr>'
