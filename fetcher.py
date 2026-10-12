@@ -404,7 +404,9 @@ def update_all_funds():
         reverse=True
     )
 
-    now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # 强制使用北京时间 (UTC+8)，避免在云端 GitHub Actions Ubuntu 容器运行时误取 UTC 时间产生 8 小时偏差
+    bj_tz = datetime.timezone(datetime.timedelta(hours=8))
+    now_str = datetime.datetime.now(bj_tz).strftime("%Y-%m-%d %H:%M:%S")
     payload = {
         "updated_at": now_str,
         "count": len(results),

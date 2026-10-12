@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-11 18:15:00",
+  "updated_at": "2026-10-12 18:15:01",
   "samples": [
     {
       "id": "xhs_ndx_01",
@@ -9,10 +9,10 @@
       "post_schedule": "工作日 09:10-09:25",
       "weight": 1.0,
       "stats": {
-        "total_checks": 3,
-        "matched_count": 21,
+        "total_checks": 9,
+        "matched_count": 63,
         "accuracy": 1.0,
-        "last_check": "2026-10-11 18:15:00"
+        "last_check": "2026-10-12 18:15:01"
       },
       "features": "实测党，重点测试万家App、南方App、广发、景顺早盘放水情况"
     },
@@ -24,10 +24,10 @@
       "post_schedule": "工作日 09:15-09:30",
       "weight": 1.0,
       "stats": {
-        "total_checks": 3,
-        "matched_count": 21,
+        "total_checks": 9,
+        "matched_count": 63,
         "accuracy": 1.0,
-        "last_check": "2026-10-11 18:15:00"
+        "last_check": "2026-10-12 18:15:01"
       },
       "features": "关注摩根、易方达、博时、天弘标普500场外大额申购"
     },
@@ -39,10 +39,10 @@
       "post_schedule": "工作日 13:00 / 18:00",
       "weight": 0.8,
       "stats": {
-        "total_checks": 3,
-        "matched_count": 21,
+        "total_checks": 9,
+        "matched_count": 63,
         "accuracy": 1.0,
-        "last_check": "2026-10-11 18:15:00"
+        "last_check": "2026-10-12 18:15:01"
       },
       "features": "汇总长图表格，标的全面，但偶有前一天残留滞后"
     },
@@ -54,10 +54,10 @@
       "post_schedule": "全天准实时",
       "weight": 0.5,
       "stats": {
-        "total_checks": 3,
-        "matched_count": 21,
+        "total_checks": 9,
+        "matched_count": 63,
         "accuracy": 1.0,
-        "last_check": "2026-10-11 18:15:00"
+        "last_check": "2026-10-12 18:15:01"
       },
       "features": "仅同步天天/同花顺三方代销额度，无官方直销放水数据，用于代销基线核验"
     }

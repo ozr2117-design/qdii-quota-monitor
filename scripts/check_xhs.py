@@ -22,11 +22,29 @@ DIFF_FILE = os.path.join(DATA_DIR, "xhs_diff_log.json")
 
 PUSHPLUS_TOKEN = os.environ.get("PUSHPLUS_TOKEN") or "36e8f929dd944cd08d38131e9995b3ad"
 
+# 解决 Windows 控制台默认 GBK 遇到 emoji 等字符时的编码崩溃
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 
 def log(msg):
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     line = f"[{now_str}] {msg}"
-    print(line)
+    try:
+        print(line)
+    except Exception:
+        try:
+            print(line.encode("gbk", errors="ignore").decode("gbk"))
+        except Exception:
+            pass
     try:
         with open(LOG_FILE, "a", encoding="utf-8") as f:
             f.write(line + "\n")
