@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "code": "006479",
+    "name": "广发纳斯达克100ETF联接人民币(QDII)C",
+    "index": "纳斯达克100",
+    "old_limit": 0,
+    "old_sgzt": "暂停申购(单日投资上限2元)",
+    "new_limit": 10,
+    "new_sgzt": "限大额(单日投资上限10元)",
+    "time": "2026-10-12 12:31:35",
+    "notice_title": "关于广发纳斯达克100交易型开放式指数证券投资基金联接基金(QDII)人民币份额恢复申购(含转换转入、定期定额和不定额投资)业务的公告",
+    "notice_url": "http://fund.eastmoney.com/gonggao/006479,AN202610121830361740.html",
+    "notice_date": "2026-10-13"
+  },
+  {
+    "code": "270042",
+    "name": "广发纳斯达克100ETF联接人民币(QDII)A",
+    "index": "纳斯达克100",
+    "old_limit": 0,
+    "old_sgzt": "暂停申购(单日投资上限2元)",
+    "new_limit": 10,
+    "new_sgzt": "限大额(单日投资上限10元)",
+    "time": "2026-10-12 12:31:35",
+    "notice_title": "关于广发纳斯达克100交易型开放式指数证券投资基金联接基金(QDII)人民币份额恢复申购(含转换转入、定期定额和不定额投资)业务的公告",
+    "notice_url": "http://fund.eastmoney.com/gonggao/270042,AN202610121830361740.html",
+    "notice_date": "2026-10-13"
+  }
+]
