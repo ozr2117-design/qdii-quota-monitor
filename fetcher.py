@@ -165,26 +165,31 @@ def extract_morningstar_benchmark(code: str) -> dict:
 
 def parse_quota_limit(sgzt_text: str, buy_flag: bool = None):
     """
-    严谨购买判断逻辑（经实盘验证）：
-    1. 只要状态以“暂停申购”、“暂停交易”、“封闭”开头，或者 buy_flag 为 False：
-       无论后面括号写什么，一律为【不能买 (已完全暂停)】，限额为 0 元！
-    2. 只有以“限大额”开头且有金额：
-       才为【能买 (限额 X 元)】！
-    3. 以“开放申购”或“正常”开头：
-       为【能买 (不限额)】！
+    严谨公募基金购买状态与限额解析状态机：
+    1. 明确暂停（官方关门）：以“暂停申购”、“暂停交易”、“封闭”开头，一律判定为【不能买 (已完全暂停)】，限额为 0 元。
+    2. 官方状态为限大额/限购：
+       - 只要官方状态文本包含“限大额”或“限购”，官方业务上已明确恢复限额申购！
+       - 绝不因三方代销平台单方面 buy_flag=False 判定为暂停（很多特定渠道/F类在天天代销不开，但官方状态明确是限大额）。
+       - 正则智能提取：支持“上限X元”、“上限X万元”、“限额X元”、“单日投资上限X元”等。
+       - 若提取出金额 > 0：返回具体金额。
+       - 若包含“限大额”但文本缺少数字（如部分F类/机构类仅返回“限大额”）：返回 -1 占位，交由同族谱份额联动校准。
+    3. 开放申购/正常：
+       - 包含“开放申购”或“正常”且不含“限大额”：限额为 999999999 (不限额/充足)。
+    4. 兜底：
+       - 若 buy_flag is False 且无限大额说明：0 元。
     """
     if not sgzt_text:
         return 0, False, "不能买 (状态未知)", "CANNOT_BUY"
 
     sgzt = sgzt_text.strip()
 
-    # 1. 如果明确以暂停申购开头，或者系统关闭了购买入口
-    if sgzt.startswith("暂停申购") or sgzt.startswith("暂停交易") or sgzt.startswith("封闭") or buy_flag is False:
+    # 1. 明确暂停（官方主动关门）
+    if sgzt.startswith("暂停申购") or sgzt.startswith("暂停交易") or sgzt.startswith("封闭"):
         return 0, False, "🔴 不能买 (完全暂停)", "CANNOT_BUY"
 
-    # 2. 如果是限大额，提取具体可用额度
+    # 2. 官方状态为限大额/限购
     if "限大额" in sgzt or "限购" in sgzt:
-        match = re.search(r"上限\s*([\d\.]+)\s*(万)?元", sgzt)
+        match = re.search(r"(?:上限|限额|限购|单日投资上限|单日)\s*([\d\.]+)\s*(万)?元?", sgzt)
         if match:
             val = float(match.group(1))
             if match.group(2) == "万":
@@ -193,9 +198,18 @@ def parse_quota_limit(sgzt_text: str, buy_flag: bool = None):
             if limit_val > 0:
                 return limit_val, True, f"🟡 能买 (限额{limit_val:,}元/日)", "CAN_BUY_LIMITED"
 
-    # 3. 如果是开放申购
+        # 官方返回了“限大额”，但文本未附带数字（如广发F类 021778）
+        # 返回 -1 占位标记，交由 update_all_funds 中的同族谱份额联动补全
+        return -1, True, "🟡 能买 (限大额)", "CAN_BUY_LIMITED"
+
+    # 3. 开放申购/正常
     if "开放申购" in sgzt or "正常" in sgzt:
-        return 999999999, True, "🟢 能买 (不限额/充足)", "CAN_BUY_OPEN"
+        if buy_flag is not False:
+            return 999999999, True, "🟢 能买 (不限额/充足)", "CAN_BUY_OPEN"
+
+    # 4. 若代销平台明确不可买且非限大额
+    if buy_flag is False:
+        return 0, False, "🔴 不能买 (完全暂停)", "CANNOT_BUY"
 
     # 其他情况兜底
     return 0, False, "🔴 不能买 (不可申购)", "CANNOT_BUY"
@@ -395,6 +409,38 @@ def update_all_funds():
         for future in as_completed(futures):
             results.append(future.result())
 
+    # === 同族基金族谱额度智能校准 (解决F类/机构类等官方接口仅标注“限大额”无数字的问题) ===
+    family_limits = {}
+    for f in results:
+        raw_name = f.get("name", "")
+        core_name = re.sub(r'([A-Za-z0-9]+类|人民币|[A-Za-z]+|\([^\)]*\)|（[^）]*）|\s+)', '', raw_name).strip()
+        amt = f.get("limit_amount", 0)
+        curr = f.get("currency", "人民币")
+        key = (core_name, curr)
+        if 0 < amt < 999999999:
+            family_limits[key] = amt
+
+    for f in results:
+        raw_name = f.get("name", "")
+        core_name = re.sub(r'([A-Za-z0-9]+类|人民币|[A-Za-z]+|\([^\)]*\)|（[^）]*）|\s+)', '', raw_name).strip()
+        key = (core_name, f.get("currency", "人民币"))
+        sgzt = f.get("sgzt_raw", "")
+        amt = f.get("limit_amount", 0)
+        
+        # 若标记为待校准限大额(-1) 或 官方写了“限大额”但解析额度<=0
+        if amt == -1 or (("限大额" in sgzt or "限购" in sgzt) and amt <= 0):
+            if key in family_limits:
+                inferred = family_limits[key]
+                f["limit_amount"] = inferred
+                f["can_buy"] = True
+                f["status_label"] = f"🟡 能买 (限额{inferred:,}元/日)"
+                f["status_tag"] = "CAN_BUY_LIMITED"
+            else:
+                f["limit_amount"] = 10  # 公募最常见最低限额兜底
+                f["can_buy"] = True
+                f["status_label"] = "🟡 能买 (限额10元/日)"
+                f["status_tag"] = "CAN_BUY_LIMITED"
+
     # 按限额由大到小排序，0的放最后
     results.sort(
         key=lambda x: (
@@ -487,13 +533,20 @@ def send_pushplus_notification(changes, time_str):
     
     html_items = []
     for c in changes:
-        old_val = c.get('old_limit', 0)
-        new_val = c.get('new_limit', 0)
+        old_val = c.get('old_limit', 0) or 0
+        new_val = c.get('new_limit', 0) or 0
+        old_sgzt = c.get('old_sgzt', '')
+        new_sgzt = c.get('new_sgzt', '')
         
-        # 判断是放宽还是收紧
-        if new_val > old_val:
+        # 严谨业务判定：
+        # 1. 放宽：金额增加，或者状态从暂停变为开放/限大额
+        is_relaxed = (new_val > old_val) or (("暂停" in old_sgzt or old_val == 0) and ("限大额" in new_sgzt or "开放" in new_sgzt or new_val > 0))
+        # 2. 收紧：金额变少，或者状态变为暂停
+        is_tightened = (new_val < old_val and new_val > 0) or ("暂停" in new_sgzt and "暂停" not in old_sgzt)
+        
+        if is_relaxed:
             badge = "<span style='color:green;font-weight:bold;'>【🟢 官方放宽】</span>"
-        elif new_val < old_val:
+        elif is_tightened:
             badge = "<span style='color:red;font-weight:bold;'>【🔴 官方收紧】</span>"
         else:
             badge = "<span style='color:blue;font-weight:bold;'>【🔄 官方状态更新】</span>"
@@ -504,6 +557,10 @@ def send_pushplus_notification(changes, time_str):
             old_desc = "不限额"
         if new_val >= 999999999:
             new_desc = "不限额"
+
+        # 防御性展示：如果状态明确是限大额，但数字仍未匹配到，展示“限大额”而非“0元(暂停)”
+        if ("限大额" in new_sgzt or "限购" in new_sgzt) and new_val <= 0:
+            new_desc = "限大额"
 
         notice_line = ""
         if c.get("notice_title") and c.get("notice_url"):
