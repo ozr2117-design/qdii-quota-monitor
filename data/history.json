@@ -1,5 +1,31 @@
 [
   {
+    "code": "019548",
+    "name": "招商纳斯达克100ETF发起式联接(QDII)C",
+    "index": "纳斯达克100",
+    "old_limit": 10,
+    "old_sgzt": "限大额(单日投资上限10元)",
+    "new_limit": 0,
+    "new_sgzt": "暂停申购(单日投资上限10元)",
+    "time": "2026-10-14 03:24:02",
+    "notice_title": "关于旗下部分基金2026年9月7日因境外主要投资市场节假日暂停申购、赎回、转换、定期定额投资业务的公告",
+    "notice_url": "http://fund.eastmoney.com/gonggao/019548,AN202609021828932440.html",
+    "notice_date": "2026-09-03"
+  },
+  {
+    "code": "019547",
+    "name": "招商纳斯达克100ETF发起式联接(QDII)A",
+    "index": "纳斯达克100",
+    "old_limit": 10,
+    "old_sgzt": "限大额(单日投资上限10元)",
+    "new_limit": 0,
+    "new_sgzt": "暂停申购(单日投资上限10元)",
+    "time": "2026-10-14 03:24:02",
+    "notice_title": "关于旗下部分基金2026年9月7日因境外主要投资市场节假日暂停申购、赎回、转换、定期定额投资业务的公告",
+    "notice_url": "http://fund.eastmoney.com/gonggao/019547,AN202609021828932440.html",
+    "notice_date": "2026-09-03"
+  },
+  {
     "code": "021778",
     "name": "广发纳指100ETF联接(QDII)人民币F",
     "index": "纳斯达克100",
