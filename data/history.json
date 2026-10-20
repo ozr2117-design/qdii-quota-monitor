@@ -1,5 +1,31 @@
 [
   {
+    "code": "014978",
+    "name": "华安纳斯达克100ETF联接(QDII)C",
+    "index": "纳斯达克100",
+    "old_limit": 5,
+    "old_sgzt": "限大额(单日投资上限5元)",
+    "new_limit": 0,
+    "new_sgzt": "暂停申购(单日投资上限5元)",
+    "time": "2026-10-20 15:47:48",
+    "notice_title": "关于华安纳斯达克100交易型开放式指数证券投资基金联接基金(QDII)暂停申购及定期定额投资的公告",
+    "notice_url": "http://fund.eastmoney.com/gonggao/014978,AN202610201830698096.html",
+    "notice_date": "2026-10-20"
+  },
+  {
+    "code": "040046",
+    "name": "华安纳斯达克100ETF联接(QDII)A",
+    "index": "纳斯达克100",
+    "old_limit": 5,
+    "old_sgzt": "限大额(单日投资上限5元)",
+    "new_limit": 0,
+    "new_sgzt": "暂停申购(单日投资上限5元)",
+    "time": "2026-10-20 15:47:48",
+    "notice_title": "关于华安纳斯达克100交易型开放式指数证券投资基金联接基金(QDII)暂停申购及定期定额投资的公告",
+    "notice_url": "http://fund.eastmoney.com/gonggao/040046,AN202610201830698096.html",
+    "notice_date": "2026-10-20"
+  },
+  {
     "code": "021778",
     "name": "广发纳指100ETF联接(QDII)人民币F",
     "index": "纳斯达克100",
