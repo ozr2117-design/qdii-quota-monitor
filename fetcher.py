@@ -16,7 +16,28 @@ HISTORY_FILE = os.path.join(DATA_DIR, "history.json")
 DIRECT_SALES_FILE = os.path.join(DATA_DIR, "direct_sales.json")
 
 
-def extract_morningstar_benchmark(code: str) -> dict:
+def get_1y_usd_cny_ratio() -> float | None:
+    """
+    通过同基金美元现汇份额与人民币份额的近1年净值收益率比值，
+    动态测算公募基金估值口径下近1年美元兑人民币汇率变化因子 (USD/CNY ratio)。
+    """
+    pairs = [("096001", "013404")]
+    url_tpl = "https://fundmobapi.eastmoney.com/FundMApi/FundBaseTypeInformation.ashx?FCODE={}&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0"
+    for rmb_code, usd_code in pairs:
+        try:
+            r_rmb = requests.get(url_tpl.format(rmb_code), timeout=5).json().get("Datas") or {}
+            r_usd = requests.get(url_tpl.format(usd_code), timeout=5).json().get("Datas") or {}
+            v_rmb = float(r_rmb.get("SYL_1N"))
+            v_usd = float(r_usd.get("SYL_1N"))
+            ratio = (1.0 + v_rmb / 100.0) / (1.0 + v_usd / 100.0)
+            if 0.75 <= ratio <= 1.25:
+                return round(ratio, 5)
+        except Exception:
+            continue
+    return None
+
+
+def extract_morningstar_benchmark(code: str, fx_ratio: float = None) -> dict:
     """
     爬取晨星 (Morningstar) 官方数据：
     获取近1年本基金相对业绩比较基准的实际超额/跑输差值。
@@ -112,14 +133,19 @@ def extract_morningstar_benchmark(code: str) -> dict:
                             pass
                 
                 if fund_1y is not None and bm_1y is not None:
-                    # 智能汇率口径校准：
-                    # 部分2014年前后成立的老纳指基金（如大成000834、国泰160213），其法定招募说明书写的基准是“纯美元纳指点位(25.80%)”
-                    # 晨星严格按法律合同抓取了美元基准，但人民币份额实际面对的是经汇率调整后的基准(19.16%)
-                    # 若直接相减会把汇率差当成跑输。此处自动对齐为公允的人民币经汇率调整基准：
+                    # 动态汇率口径校准：
+                    # 部分老 QDII 基金（如大成 096001/008401/000834、国泰 160213）在基金合同中规定
+                    # 业绩比较基准为“纯美元指数收益率”，晨星按合同抓取美元基准，而基金净值为人民币计价。
+                    # 使用当期动态测算的 1 年期 USD/CNY 汇率变化因子自动将纯美元基准折算为人民币口径，
+                    # 仅当折算后偏差显著收敛（至少缩小 2.5 个百分点）时触发对齐，避免误伤已折算人民币基准的基金。
                     is_aligned = False
-                    if bm_1y > 23.0 and fund_1y < 22.0:
-                        bm_1y = 19.16
-                        is_aligned = True
+                    if fx_ratio is not None and abs(fx_ratio - 1.0) >= 0.015:
+                        bm_aligned = round(((1.0 + bm_1y / 100.0) * fx_ratio - 1.0) * 100.0, 2)
+                        raw_gap = abs(fund_1y - bm_1y)
+                        aligned_gap = abs(fund_1y - bm_aligned)
+                        if raw_gap >= 3.0 and aligned_gap <= raw_gap - 2.5:
+                            bm_1y = bm_aligned
+                            is_aligned = True
 
                     diff = round(fund_1y - bm_1y, 2)
                     if diff >= 0:
@@ -215,7 +241,7 @@ def parse_quota_limit(sgzt_text: str, buy_flag: bool = None):
     return 0, False, "🔴 不能买 (不可申购)", "CANNOT_BUY"
 
 
-def fetch_single_fund(item: dict) -> dict:
+def fetch_single_fund(item: dict, fx_ratio: float = None) -> dict:
     code = item["code"]
     url = f"https://fundmobapi.eastmoney.com/FundMApi/FundBaseTypeInformation.ashx?FCODE={code}&deviceid=Wap&plat=Wap&product=EFund&version=2.0.0"
     
@@ -284,7 +310,7 @@ def fetch_single_fund(item: dict) -> dict:
                 pass
 
             # 获取晨星相对基准偏离度 (Morningstar Benchmark Tracking)
-            ms_info = extract_morningstar_benchmark(code)
+            ms_info = extract_morningstar_benchmark(code, fx_ratio=fx_ratio)
 
             return {
                 "code": code,
@@ -403,9 +429,10 @@ def update_all_funds():
 
     os.makedirs(DATA_DIR, exist_ok=True)
 
+    fx_ratio = get_1y_usd_cny_ratio()
     results = []
     with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {executor.submit(fetch_single_fund, item): item for item in funds}
+        futures = {executor.submit(fetch_single_fund, item, fx_ratio): item for item in funds}
         for future in as_completed(futures):
             results.append(future.result())
 
