@@ -1,5 +1,31 @@
 [
   {
+    "code": "008971",
+    "name": "大成纳斯达克100ETF联接(QDII)C",
+    "index": "纳斯达克100",
+    "old_limit": 100,
+    "old_sgzt": "限大额(单日投资上限10元)",
+    "new_limit": 100,
+    "new_sgzt": "限大额(单日投资上限5元)",
+    "time": "2026-11-27 16:31:52",
+    "notice_title": "关于大成纳斯达克100交易型开放式指数证券投资基金联接基金(QDII)调整大额申购(含定期定额申购)的公告",
+    "notice_url": "http://fund.eastmoney.com/gonggao/008971,AN202611271832088827.html",
+    "notice_date": "2026-11-27"
+  },
+  {
+    "code": "000834",
+    "name": "大成纳斯达克100ETF联接(QDII)A",
+    "index": "纳斯达克100",
+    "old_limit": 100,
+    "old_sgzt": "限大额(单日投资上限10元)",
+    "new_limit": 100,
+    "new_sgzt": "限大额(单日投资上限5元)",
+    "time": "2026-11-27 16:31:52",
+    "notice_title": "关于大成纳斯达克100交易型开放式指数证券投资基金联接基金(QDII)调整大额申购(含定期定额申购)的公告",
+    "notice_url": "http://fund.eastmoney.com/gonggao/000834,AN202611271832088827.html",
+    "notice_date": "2026-11-27"
+  },
+  {
     "code": "021000",
     "name": "南方纳斯达克100指数发起(QDII)I",
     "index": "纳斯达克100",
